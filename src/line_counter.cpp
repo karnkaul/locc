@@ -1,4 +1,6 @@
+#include <cctype>
 #include <fstream>
+#include <string>
 #include <line_counter.hpp>
 
 namespace
