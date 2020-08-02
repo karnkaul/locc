@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <stdexcept>
 #include <args_parser.hpp>
 #include <common.hpp>
 #include <line_counter.hpp>
@@ -126,12 +127,22 @@ std::deque<stdfs::path> file_list(std::deque<ap::entry> const& entries)
 			}
 			if (stdfs::is_directory(stdfs::absolute(k)))
 			{
-				for (auto& path : stdfs::recursive_directory_iterator(k))
+				auto recurse = stdfs::recursive_directory_iterator(k, stdfs::directory_options::skip_permission_denied);
+				for (auto iter = stdfs::begin(recurse); iter != stdfs::end(recurse); ++iter)
 				{
-					if (!skip_file(path))
+					try
 					{
-						DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- tracking " << path.path().generic_string() << "\n");
-						ret.push_back(std::move(path));
+						auto const& path = iter->path();
+						if (!skip_file(path))
+						{
+							DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- tracking " << path.generic_string() << "\n");
+							ret.push_back(std::move(path));
+						}
+					}
+					catch (std::exception const& e)
+					{
+						std::cerr << "Exception caught: " << e.what() << "\n";
+						continue;
 					}
 				}
 				return ret;

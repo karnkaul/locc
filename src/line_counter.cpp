@@ -3,6 +3,7 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <stdexcept>
 #include <thread>
 #include <line_counter.hpp>
 
@@ -173,16 +174,25 @@ loc::result loc::process(std::deque<stdfs::path> file_paths)
 	std::deque<std::thread> threads;
 	DOIF(cfg::test(cfg::flag::debug) && use_threads, std::cout << "  -- launching " << file_paths.size() << " worker threads\n");
 	DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- parsing " << file_paths.size() << " files\n");
+	std::size_t count = 0;
 	for (auto iter = file_paths.begin(); iter != file_paths.end(); ++iter)
 	{
 		if (use_threads)
 		{
-			threads.push_back(std::thread([iter, &process_file]() { process_file(iter); }));
+			try
+			{
+				threads.push_back(std::thread([iter, &process_file]() { process_file(iter); }));
+			}
+			catch (std::exception const& e)
+			{
+				std::cerr << "File #" << count << " [" << threads.size() << " threads]: Exception caught: " << e.what() << "\n";
+			}
 		}
 		else
 		{
 			process_file(iter);
 		}
+		++count;
 	}
 	for (auto& thread : threads)
 	{
