@@ -1,0 +1,29 @@
+image:
+  - Visual Studio 2019
+  - Ubuntu2004
+
+configuration:
+  - Release
+
+for:
+  - matrix:
+      only:
+        - image: Visual Studio 2019
+    install:
+      - cmd: cmake -G "Visual Studio 16 2019" .
+    build:
+      project: loc.sln
+      parallel: true
+      verbosity: minimal
+
+  - matrix:
+      only:
+        - image: Ubuntu2004
+    build_script:
+      - sh: cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
+      - sh: echo "== Building Linux $CONFIGURATION ==" && ninja -v || exit 1
+
+matrix:
+  fast_finish: true
+
+skip_branch_with_pr: true

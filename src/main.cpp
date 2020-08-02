@@ -1,17 +1,17 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 #include <stdexcept>
 #include <args_parser.hpp>
 #include <common.hpp>
+#include <file_list_generator.hpp>
 #include <line_counter.hpp>
 
 namespace
 {
 void help_summary()
 {
-	std::cout << "\n == TODO (Help Summary) == \n\n";
+	loc::log("\n == TODO (Help Summary) == \n\n");
 }
 
 template <typename T, typename... Ts>
@@ -20,7 +20,7 @@ bool match_any(T const& lhs, Ts const&... rhs)
 	return (... || (lhs == rhs));
 }
 
-bool parse_options(ap::key const& key, ap::value const& value)
+bool parse_options(loc::key const& key, loc::value const& value)
 {
 	if (match_any(key, "i", "ignore"))
 	{
@@ -37,13 +37,20 @@ bool parse_options(ap::key const& key, ap::value const& value)
 		}
 		return true;
 	}
-	else if (match_any(key, "skip-dir"))
+	else if (match_any(key, "skip-substr"))
 	{
 		if (!value.empty())
 		{
-			cfg::g_skip_dirs.insert(std::move(value));
+			cfg::g_skip_substrs.insert(std::move(value));
 		}
 		return true;
+	}
+	else if (match_any(key, "skip-ext"))
+	{
+		if (!value.empty())
+		{
+			cfg::g_skip_exts.insert(std::move(value));
+		}
 	}
 	else if (match_any(key, "b", "blanks"))
 	{
@@ -63,7 +70,11 @@ bool parse_options(ap::key const& key, ap::value const& value)
 	else if (match_any(key, "d", "debug"))
 	{
 		cfg::set(cfg::flag::debug);
-		cfg::set(cfg::flag::verbose);
+		return true;
+	}
+	else if (match_any(key, "q", "quiet"))
+	{
+		cfg::set(cfg::flag::quiet);
 		return true;
 	}
 	else if (match_any(key, "h", "help"))
@@ -74,104 +85,35 @@ bool parse_options(ap::key const& key, ap::value const& value)
 	return false;
 }
 
-bool skip_file(stdfs::path const& path)
+std::deque<stdfs::path> file_list(std::deque<loc::entry> entries)
 {
-	if (!stdfs::is_regular_file(path))
+	for (auto iter = entries.begin(); iter != entries.end();)
 	{
-		return true;
-	}
-	auto const ext = path.extension();
-	if (ext.empty())
-	{
-		return true;
-	}
-	auto const ext_str = ext.generic_string();
-	if (std::any_of(cfg::g_skip_ext.begin(), cfg::g_skip_ext.end(), [ext_str](auto skip) -> bool { return std::string_view(skip) == ext_str; }))
-	{
-		return true;
-	}
-	auto p = path;
-	while (!p.empty() && p.has_parent_path())
-	{
-		auto const name = p.filename().generic_string();
-		auto const path = p.generic_string();
-		if (name.size() > 1 && name.at(0) == '.' && name.at(1) != '.')
+		auto& [key, value] = *iter;
+		if (parse_options(key, value))
 		{
-			return true;
+			iter = entries.erase(iter);
 		}
-		if (std::any_of(cfg::g_skip_dirs.begin(), cfg::g_skip_dirs.end(), [path](auto skip) -> bool { return path.find(skip) != loc::null_index; }))
+		else
 		{
-			return true;
-		}
-		p = p.parent_path();
-	}
-	if (path.generic_string().find(".git") != std::string::npos)
-	{
-		return true;
-	}
-	return false;
-}
-
-std::deque<stdfs::path> file_list(std::deque<ap::entry> const& entries)
-{
-	std::deque<stdfs::path> ret;
-	bool reading_files = false;
-	for (auto& [key, value] : entries)
-	{
-		if (!reading_files && !parse_options(key, value))
-		{
-			auto k = key;
-			if (key == "." || key == "..")
-			{
-				k += "/";
-			}
-			if (stdfs::is_directory(stdfs::absolute(k)))
-			{
-				auto recurse = stdfs::recursive_directory_iterator(k, stdfs::directory_options::skip_permission_denied);
-				for (auto iter = stdfs::begin(recurse); iter != stdfs::end(recurse); ++iter)
-				{
-					try
-					{
-						auto const& path = iter->path();
-						if (!skip_file(path))
-						{
-							DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- tracking " << path.generic_string() << "\n");
-							ret.push_back(std::move(path));
-						}
-					}
-					catch (std::exception const& e)
-					{
-						std::cerr << "Exception caught: " << e.what() << "\n";
-						continue;
-					}
-				}
-				return ret;
-			}
-			reading_files = true;
-		}
-		if (reading_files)
-		{
-			if (!skip_file(stdfs::absolute(key)))
-			{
-				ret.push_back(std::move(key));
-			}
+			return loc::file_list(entries);
 		}
 	}
-	return ret;
+	return {};
 }
 
 void print_flags()
 {
-	std::cout << "\n  -- flags:";
+	loc::log("\n  -- flags:");
 	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i)
 	{
-		DOIF(cfg::test((cfg::flag)i), std::cout << " " << cfg::g_flag_names.at(i));
+		loc::log(cfg::test((cfg::flag)i), " ", cfg::g_flag_names.at(i));
 	}
 	if (cfg::g_flags.none())
 	{
-		std::cout << " [none]";
+		loc::log(" [none]");
 	}
-	std::cout << "\n\n";
+	loc::log("\n\n");
 }
 
 void run_loc(std::deque<stdfs::path> file_paths)
@@ -187,36 +129,35 @@ void run_loc(std::deque<stdfs::path> file_paths)
 	auto result = loc::process(std::move(file_paths));
 	if (result.totals.lines.loc > 0 || cfg::test(cfg::flag::verbose))
 	{
-		DOIF(cfg::test(cfg::flag::verbose), result.totals.max_widths.loc += 2;);
-		auto const w_loc = cfg::test(cfg::flag::blanks) ? result.totals.max_widths.loc + result.totals.max_widths.empty : result.totals.max_widths.loc;
 		auto const w_total = result.totals.max_widths.total;
 		if (cfg::test(cfg::flag::verbose))
 		{
+			auto const w_loc = cfg::test(cfg::flag::blanks) ? result.totals.max_widths.total : result.totals.max_widths.loc;
 			for (auto const& file : result.files)
 			{
 				auto const loc = (cfg::test(cfg::flag::blanks) ? file.lines.loc + file.lines.empty : file.lines.loc);
-				std::cout << std::setw(w_loc) << loc << "\t[" << std::setw(w_total + 2) << file.lines.total << " ]  " << file.path.generic_string() << "\n";
+				loc::log("  ", std::setw(w_loc), loc, "\t[ ", std::setw(w_total), file.lines.total, " ]  ", file.path.generic_string(), "\n");
 			}
-			std::cout << std::setw(w_loc);
+			loc::log("  ", std::setw(w_loc));
 		}
-		std::cout << (cfg::test(cfg::flag::blanks) ? result.totals.lines.loc + result.totals.lines.empty : result.totals.lines.loc);
+		loc::log_force(cfg::test(cfg::flag::blanks) ? result.totals.lines.loc + result.totals.lines.empty : result.totals.lines.loc);
 		char const* loc_msg = cfg::test(cfg::flag::blanks) ? "total lines of code (including blanks)" : "total lines of code";
-		DOIF(cfg::test(cfg::flag::verbose), std::cout << "\t[" << std::setw(w_total + 2) << result.totals.lines.total << " ]  " << loc_msg);
-		std::cout << "\n";
+		loc::log(cfg::test(cfg::flag::verbose), "\t[ ", std::setw(w_total), result.totals.lines.total, " ]  ", loc_msg);
+		loc::log("\n");
 	}
 }
 } // namespace
 
 int main(int argc, char** argv)
 {
-	auto entries = ap::parse(argc, argv);
+	auto entries = loc::parse(argc, argv);
 	if (entries.size() < 2)
 	{
 		help_summary();
 		return 0;
 	}
 	entries.pop_front();
-	auto file_paths = file_list(entries);
+	auto file_paths = file_list(std::move(entries));
 	DOIF(cfg::test(cfg::flag::debug), print_flags());
 	if (cfg::test(cfg::flag::help))
 	{

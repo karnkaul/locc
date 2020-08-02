@@ -1,26 +1,15 @@
 #include <cctype>
 #include <fstream>
-#include <iostream>
 #include <mutex>
 #include <string>
 #include <stdexcept>
 #include <thread>
+#include <async_queue.hpp>
 #include <line_counter.hpp>
 
 namespace
 {
 constexpr std::size_t g_DEBUG_skip_to_line = 124;
-
-struct lockable final
-{
-	std::mutex mutex;
-	using locker = std::scoped_lock<decltype(mutex)>;
-
-	locker lock()
-	{
-		return locker(mutex);
-	}
-};
 
 bool ignore_line(std::string_view line)
 {
@@ -152,6 +141,44 @@ std::size_t width(std::size_t number)
 	}
 	return ret;
 }
+
+struct worker final
+{
+	std::thread thread;
+
+	worker() = default;
+
+	worker(loc::async_queue& out_queue)
+	{
+		thread = std::thread([this, &out_queue]() { work(out_queue); });
+	}
+
+	worker(worker&&) = default;
+	worker& operator=(worker&&) = default;
+
+	~worker()
+	{
+		if (thread.joinable())
+		{
+			thread.join();
+		}
+	}
+
+	void work(loc::async_queue& out_queue)
+	{
+		while (auto task = out_queue.pop())
+		{
+			if (!task)
+			{
+				break;
+			}
+			task();
+		}
+	}
+};
+
+loc::async_queue g_queue;
+std::deque<worker> g_workers;
 } // namespace
 
 loc::result loc::process(std::deque<stdfs::path> file_paths)
@@ -165,28 +192,25 @@ loc::result loc::process(std::deque<stdfs::path> file_paths)
 		ret.totals.lines.total += file.lines.total;
 		ret.totals.lines.loc += file.lines.loc;
 		ret.totals.lines.empty += file.lines.empty;
-		ret.totals.max_widths.total = std::max(ret.totals.max_widths.total, width(file.lines.total));
-		ret.totals.max_widths.loc = std::max(ret.totals.max_widths.loc, width(file.lines.loc));
-		ret.totals.max_widths.empty = std::max(ret.totals.max_widths.empty, width(file.lines.empty));
 		ret.files.push_back(std::move(file));
 	};
 	bool const use_threads = !cfg::test(cfg::flag::one_thread) && file_paths.size();
-	std::deque<std::thread> threads;
-	DOIF(cfg::test(cfg::flag::debug) && use_threads, std::cout << "  -- launching " << file_paths.size() << " worker threads\n");
-	DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- parsing " << file_paths.size() << " files\n");
+	loc::log(cfg::test(cfg::flag::debug), "  -- parsing ", file_paths.size(), " files\n");
 	std::size_t count = 0;
+	if (use_threads && g_workers.empty())
+	{
+		int count = (int)std::thread::hardware_concurrency() - 1;
+		loc::log(cfg::test(cfg::flag::debug), "  -- launching ", count, " worker threads\n");
+		for (; count > 0; --count)
+		{
+			g_workers.push_back(worker(g_queue));
+		}
+	}
 	for (auto iter = file_paths.begin(); iter != file_paths.end(); ++iter)
 	{
 		if (use_threads)
 		{
-			try
-			{
-				threads.push_back(std::thread([iter, &process_file]() { process_file(iter); }));
-			}
-			catch (std::exception const& e)
-			{
-				std::cerr << "File #" << count << " [" << threads.size() << " threads]: Exception caught: " << e.what() << "\n";
-			}
+			g_queue.push([iter, process_file]() { process_file(iter); });
 		}
 		else
 		{
@@ -194,14 +218,23 @@ loc::result loc::process(std::deque<stdfs::path> file_paths)
 		}
 		++count;
 	}
-	for (auto& thread : threads)
+	if (use_threads)
 	{
-		if (thread.joinable())
+		while (!g_queue.empty())
 		{
-			thread.join();
+			auto task = g_queue.pop();
+			task();
+		}
+		auto residue = g_queue.flush();
+		g_workers.clear();
+		loc::log(cfg::test(cfg::flag::debug), "  -- worker threads completed\n");
+		for (auto& task : residue)
+		{
+			task();
 		}
 	}
-	DOIF(cfg::test(cfg::flag::debug) && !threads.empty(), std::cout << "  -- worker threads completed\n");
-	DOIF(cfg::test(cfg::flag::debug), std::cout << "\n");
+	loc::log(cfg::test(cfg::flag::debug), "\n");
+	ret.totals.max_widths.total = width(ret.totals.lines.total);
+	ret.totals.max_widths.loc = width(ret.totals.lines.loc);
 	return ret;
 }
