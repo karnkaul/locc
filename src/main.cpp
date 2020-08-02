@@ -11,7 +11,7 @@ namespace
 {
 void help_summary()
 {
-	loc::log("\n == TODO (Help Summary) == \n\n");
+	locc::log("\n == TODO (Help Summary) == \n\n");
 }
 
 template <typename T, typename... Ts>
@@ -20,12 +20,12 @@ bool match_any(T const& lhs, Ts const&... rhs)
 	return (... || (lhs == rhs));
 }
 
-bool parse_options(loc::key const& key, loc::value const& value)
+bool parse_options(locc::key const& key, locc::value const& value)
 {
 	if (match_any(key, "i", "ignore"))
 	{
 		std::size_t const comma = value.find(",");
-		if (comma != loc::null_index && value.size() > comma)
+		if (comma != locc::null_index && value.size() > comma)
 		{
 			auto l = value.substr(0, comma);
 			auto r = value.substr(comma + 1);
@@ -85,7 +85,7 @@ bool parse_options(loc::key const& key, loc::value const& value)
 	return false;
 }
 
-std::deque<stdfs::path> file_list(std::deque<loc::entry> entries)
+std::deque<stdfs::path> file_list(std::deque<locc::entry> entries)
 {
 	for (auto iter = entries.begin(); iter != entries.end();)
 	{
@@ -96,7 +96,7 @@ std::deque<stdfs::path> file_list(std::deque<loc::entry> entries)
 		}
 		else
 		{
-			return loc::file_list(entries);
+			return locc::file_list(entries);
 		}
 	}
 	return {};
@@ -104,16 +104,16 @@ std::deque<stdfs::path> file_list(std::deque<loc::entry> entries)
 
 void print_flags()
 {
-	loc::log("\n  -- flags:");
+	locc::log("\n  -- flags:");
 	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i)
 	{
-		loc::log(cfg::test((cfg::flag)i), " ", cfg::g_flag_names.at(i));
+		locc::log(cfg::test((cfg::flag)i), " ", cfg::g_flag_names.at(i));
 	}
 	if (cfg::g_flags.none())
 	{
-		loc::log(" [none]");
+		locc::log(" [none]");
 	}
-	loc::log("\n\n");
+	locc::log("\n\n");
 }
 
 void run_loc(std::deque<stdfs::path> file_paths)
@@ -126,7 +126,7 @@ void run_loc(std::deque<stdfs::path> file_paths)
 	{
 		cfg::g_ignore_blocks = {{"/*", "*/"}};
 	}
-	auto result = loc::process(std::move(file_paths));
+	auto result = locc::process(std::move(file_paths));
 	if (result.totals.lines.loc > 0 || cfg::test(cfg::flag::verbose))
 	{
 		auto const w_total = result.totals.max_widths.total;
@@ -136,21 +136,21 @@ void run_loc(std::deque<stdfs::path> file_paths)
 			for (auto const& file : result.files)
 			{
 				auto const loc = (cfg::test(cfg::flag::blanks) ? file.lines.loc + file.lines.empty : file.lines.loc);
-				loc::log("  ", std::setw(w_loc), loc, "\t[ ", std::setw(w_total), file.lines.total, " ]  ", file.path.generic_string(), "\n");
+				locc::log("  ", std::setw(w_loc), loc, "\t[ ", std::setw(w_total), file.lines.total, " ]  ", file.path.generic_string(), "\n");
 			}
-			loc::log("  ", std::setw(w_loc));
+			locc::log("  ", std::setw(w_loc));
 		}
-		loc::log_force(cfg::test(cfg::flag::blanks) ? result.totals.lines.loc + result.totals.lines.empty : result.totals.lines.loc);
+		locc::log_force(cfg::test(cfg::flag::blanks) ? result.totals.lines.loc + result.totals.lines.empty : result.totals.lines.loc);
 		char const* loc_msg = cfg::test(cfg::flag::blanks) ? "total lines of code (including blanks)" : "total lines of code";
-		loc::log(cfg::test(cfg::flag::verbose), "\t[ ", std::setw(w_total), result.totals.lines.total, " ]  ", loc_msg);
-		loc::log("\n");
+		locc::log(cfg::test(cfg::flag::verbose), "\t[ ", std::setw(w_total), result.totals.lines.total, " ]  ", loc_msg);
+		locc::log("\n");
 	}
 }
 } // namespace
 
 int main(int argc, char** argv)
 {
-	auto entries = loc::parse(argc, argv);
+	auto entries = locc::parse(argc, argv);
 	if (entries.size() < 2)
 	{
 		help_summary();

@@ -12,7 +12,7 @@ for:
     install:
       - cmd: cmake -G "Visual Studio 16 2019" .
     build:
-      project: loc.sln
+      project: locc.sln
       parallel: true
       verbosity: minimal
 

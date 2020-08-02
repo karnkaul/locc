@@ -37,10 +37,10 @@ std::string_view trim(std::string_view sub_line)
 		}
 		for (auto& pair : cfg::g_ignore_blocks)
 		{
-			if (auto const start = sub_line.find(pair.first); start != loc::null_index)
+			if (auto const start = sub_line.find(pair.first); start != locc::null_index)
 			{
 				auto const end = sub_line.find(pair.second);
-				if (end != loc::null_index && end + pair.second.size() < sub_line.size())
+				if (end != locc::null_index && end + pair.second.size() < sub_line.size())
 				{
 					return trim(sub_line.substr(end + pair.second.size()));
 				}
@@ -51,14 +51,14 @@ std::string_view trim(std::string_view sub_line)
 	return sub_line;
 }
 
-loc::ignore_block const* start_ignoring(std::string_view sub_line)
+locc::ignore_block const* start_ignoring(std::string_view sub_line)
 {
 	for (auto& pair : cfg::g_ignore_blocks)
 	{
-		if (auto const start = sub_line.find(pair.first); start != loc::null_index)
+		if (auto const start = sub_line.find(pair.first); start != locc::null_index)
 		{
 			auto const end = sub_line.find(pair.second);
-			if (end == loc::null_index || end >= sub_line.size())
+			if (end == locc::null_index || end >= sub_line.size())
 			{
 				return &pair;
 			}
@@ -68,14 +68,14 @@ loc::ignore_block const* start_ignoring(std::string_view sub_line)
 	return nullptr;
 }
 
-bool count_line(std::string_view line, loc::ignore_block const*& out_ignoring)
+bool count_line(std::string_view line, locc::ignore_block const*& out_ignoring)
 {
 	line = trim(line);
 	if (!line.empty())
 	{
 		if (out_ignoring)
 		{
-			if (auto const end = line.find(out_ignoring->second); end != loc::null_index)
+			if (auto const end = line.find(out_ignoring->second); end != locc::null_index)
 			{
 				auto const offset = out_ignoring->second.size();
 				out_ignoring = nullptr;
@@ -91,15 +91,15 @@ bool count_line(std::string_view line, loc::ignore_block const*& out_ignoring)
 	return false;
 }
 
-loc::file count_lines(stdfs::path file_path)
+locc::file count_lines(stdfs::path file_path)
 {
-	loc::file ret;
+	locc::file ret;
 	std::ifstream f(stdfs::absolute(file_path), std::ios::in);
 	if (f.good())
 	{
 		ret.lines.loc = ret.lines.total = 1;
 		std::string line;
-		loc::ignore_block const* ignoring = nullptr;
+		locc::ignore_block const* ignoring = nullptr;
 		while (std::getline(f, line))
 		{
 			++ret.lines.total;
@@ -148,7 +148,7 @@ struct worker final
 
 	worker() = default;
 
-	worker(loc::async_queue& out_queue)
+	worker(locc::async_queue& out_queue)
 	{
 		thread = std::thread([this, &out_queue]() { work(out_queue); });
 	}
@@ -164,7 +164,7 @@ struct worker final
 		}
 	}
 
-	void work(loc::async_queue& out_queue)
+	void work(locc::async_queue& out_queue)
 	{
 		while (auto task = out_queue.pop())
 		{
@@ -177,11 +177,11 @@ struct worker final
 	}
 };
 
-loc::async_queue g_queue;
+locc::async_queue g_queue;
 std::deque<worker> g_workers;
 } // namespace
 
-loc::result loc::process(std::deque<stdfs::path> file_paths)
+locc::result locc::process(std::deque<stdfs::path> file_paths)
 {
 	result ret;
 	lockable mutex;
@@ -195,12 +195,12 @@ loc::result loc::process(std::deque<stdfs::path> file_paths)
 		ret.files.push_back(std::move(file));
 	};
 	bool const use_threads = !cfg::test(cfg::flag::one_thread) && file_paths.size();
-	loc::log(cfg::test(cfg::flag::debug), "  -- parsing ", file_paths.size(), " files\n");
+	locc::log(cfg::test(cfg::flag::debug), "  -- parsing ", file_paths.size(), " files\n");
 	std::size_t count = 0;
 	if (use_threads && g_workers.empty())
 	{
 		int count = (int)std::thread::hardware_concurrency() - 1;
-		loc::log(cfg::test(cfg::flag::debug), "  -- launching ", count, " worker threads\n");
+		locc::log(cfg::test(cfg::flag::debug), "  -- launching ", count, " worker threads\n");
 		for (; count > 0; --count)
 		{
 			g_workers.push_back(worker(g_queue));
@@ -227,13 +227,13 @@ loc::result loc::process(std::deque<stdfs::path> file_paths)
 		}
 		auto residue = g_queue.flush();
 		g_workers.clear();
-		loc::log(cfg::test(cfg::flag::debug), "  -- worker threads completed\n");
+		locc::log(cfg::test(cfg::flag::debug), "  -- worker threads completed\n");
 		for (auto& task : residue)
 		{
 			task();
 		}
 	}
-	loc::log(cfg::test(cfg::flag::debug), "\n");
+	locc::log(cfg::test(cfg::flag::debug), "\n");
 	ret.totals.max_widths.total = width(ret.totals.lines.total);
 	ret.totals.max_widths.loc = width(ret.totals.lines.loc);
 	return ret;

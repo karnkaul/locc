@@ -2,7 +2,7 @@
 #include <string_view>
 #include <args_parser.hpp>
 
-std::deque<loc::entry> loc::parse(int argc, char const* const* argv)
+std::deque<locc::entry> locc::parse(int argc, char const* const* argv)
 {
 	auto key_value = [](std::string_view token, std::size_t equals) -> std::pair<key, value> {
 		auto k = key(token.substr(0, equals));
@@ -46,21 +46,21 @@ std::deque<loc::entry> loc::parse(int argc, char const* const* argv)
 					{
 						for (auto c : token)
 						{
-							ret.push_back({loc::key(1, c), {}});
+							ret.push_back({locc::key(1, c), {}});
 						}
 					}
 				}
 			}
 			else
 			{
-				ret.push_back({loc::key(token), {}});
+				ret.push_back({locc::key(token), {}});
 			}
 		}
 	}
 	return ret;
 }
 
-loc::value const* loc::find(std::deque<entry> const& entries, key const& key)
+locc::value const* locc::find(std::deque<entry> const& entries, key const& key)
 {
 	auto search = std::find_if(entries.begin(), entries.end(), [key](auto const& entry) -> bool { return entry.first == key; });
 	if (search != entries.end())

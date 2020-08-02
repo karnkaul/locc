@@ -19,7 +19,7 @@
 
 namespace stdfs = std::filesystem;
 
-namespace loc
+namespace locc
 {
 using ignore_line = std::string;
 using ignore_block = std::pair<std::string, std::string>;
@@ -87,7 +87,7 @@ void err(Args&&... args);
 
 template <typename... Args>
 void log_force(Args&&... args);
-} // namespace loc
+} // namespace locc
 
 namespace cfg
 {
@@ -105,8 +105,8 @@ enum class flag
 inline std::bitset<(std::size_t)flag::count_> g_flags;
 inline std::array<std::string_view, (std::size_t)flag::count_> const g_flag_names = {"blanks", "one_thread", "verbose", "debug", "quiet", "help"};
 
-inline std::unordered_set<loc::ignore_line> g_ignore_lines;
-inline std::unordered_set<loc::ignore_block, loc::pair_hasher> g_ignore_blocks;
+inline std::unordered_set<locc::ignore_line> g_ignore_lines;
+inline std::unordered_set<locc::ignore_block, locc::pair_hasher> g_ignore_blocks;
 
 inline std::unordered_set<std::string> g_skip_exts = {".exe", ".bin", ".o",	  ".obj", ".a",	  ".lib", ".so",  ".dll",
 													  ".jpg", ".png", ".tga", ".mtl", ".pdf", ".zip", ".tar", ".ninja"};
@@ -123,7 +123,7 @@ inline bool test(cfg::flag flag)
 }
 } // namespace cfg
 
-namespace loc
+namespace locc
 {
 inline std::stringstream& concat(std::stringstream& in)
 {
@@ -183,4 +183,4 @@ void log_force(Args&&... args)
 {
 	xout(std::cout, std::forward<Args>(args)...);
 }
-} // namespace loc
+} // namespace locc

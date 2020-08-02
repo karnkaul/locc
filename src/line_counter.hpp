@@ -1,7 +1,7 @@
 #pragma once
 #include <common.hpp>
 
-namespace loc
+namespace locc
 {
 result process(std::deque<stdfs::path> file_paths);
-} // namespace loc
+} // namespace locc

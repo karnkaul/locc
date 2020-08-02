@@ -5,9 +5,9 @@
 #include <utility>
 #include <common.hpp>
 
-namespace loc
+namespace locc
 {
 std::deque<entry> parse(int argc, char const* const* argv);
 
 value const* find(std::deque<entry> const& entries, key const& key);
-} // namespace loc
+} // namespace locc

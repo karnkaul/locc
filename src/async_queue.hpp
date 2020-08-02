@@ -4,7 +4,7 @@
 #include <functional>
 #include <mutex>
 
-namespace loc
+namespace locc
 {
 struct lockable final
 {
@@ -68,4 +68,4 @@ public:
 		return m_queue.empty();
 	}
 };
-} // namespace loc
+} // namespace locc

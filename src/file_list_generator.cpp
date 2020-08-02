@@ -29,7 +29,7 @@ bool skip_file(stdfs::path const& path)
 		{
 			return true;
 		}
-		if (std::any_of(cfg::g_skip_substrs.begin(), cfg::g_skip_substrs.end(), [path](auto skip) -> bool { return path.find(skip) != loc::null_index; }))
+		if (std::any_of(cfg::g_skip_substrs.begin(), cfg::g_skip_substrs.end(), [path](auto skip) -> bool { return path.find(skip) != locc::null_index; }))
 		{
 			return true;
 		}
@@ -43,7 +43,7 @@ bool skip_file(stdfs::path const& path)
 }
 } // namespace
 
-std::deque<stdfs::path> loc::file_list(std::deque<loc::entry> const& entries)
+std::deque<stdfs::path> locc::file_list(std::deque<locc::entry> const& entries)
 {
 	std::deque<stdfs::path> ret;
 	bool reading_files = false;
@@ -68,14 +68,14 @@ std::deque<stdfs::path> loc::file_list(std::deque<loc::entry> const& entries)
 							auto path = iter->path();
 							if (!skip_file(path))
 							{
-								loc::log(cfg::test(cfg::flag::debug), "  -- tracking ", path.generic_string(), "\n");
+								locc::log(cfg::test(cfg::flag::debug), "  -- tracking ", path.generic_string(), "\n");
 								ret.push_back(std::move(path));
 							}
 						}
 					}
 					catch (std::exception const& e)
 					{
-						loc::err("Exception caught: ", e.what(), "\n");
+						locc::err("Exception caught: ", e.what(), "\n");
 						continue;
 					}
 				}
