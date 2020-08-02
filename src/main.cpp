@@ -76,23 +76,28 @@ bool skip_file(stdfs::path const& path)
 		return true;
 	}
 	auto const ext = path.extension();
-	if (!ext.empty())
+	if (ext.empty())
 	{
-		auto const ext_str = ext.generic_string();
-		if (std::any_of(cfg::g_skip_ext.begin(), cfg::g_skip_ext.end(), [ext_str](auto skip) -> bool { return std::string_view(skip) == ext_str; }))
-		{
-			return true;
-		}
+		return true;
+	}
+	auto const ext_str = ext.generic_string();
+	if (std::any_of(cfg::g_skip_ext.begin(), cfg::g_skip_ext.end(), [ext_str](auto skip) -> bool { return std::string_view(skip) == ext_str; }))
+	{
+		return true;
 	}
 	auto p = path;
 	while (!p.empty() && p.has_parent_path())
 	{
-		p = p.parent_path();
 		auto const name = p.filename().generic_string();
-		if (name.size() > 1 && name.at(0) == '.')
+		if (name.size() > 1 && name.at(0) == '.' && name.at(1) != '.')
 		{
 			return true;
 		}
+		if (std::any_of(cfg::g_skip_dirs.begin(), cfg::g_skip_dirs.end(), [name](auto skip) -> bool { return std::string_view(skip) == name; }))
+		{
+			return true;
+		}
+		p = p.parent_path();
 	}
 	if (path.generic_string().find(".git") != std::string::npos)
 	{
@@ -174,13 +179,13 @@ void run_loc(std::deque<stdfs::path> file_paths)
 			for (auto const& file : result.files)
 			{
 				auto const loc = (cfg::test(cfg::flag::blanks) ? file.lines.loc + file.lines.empty : file.lines.loc);
-				std::cout << std::setw(w_loc) << loc << "\t[ " << std::setw(w_total) << file.lines.total << " ]  " << file.path.generic_string() << "\n";
+				std::cout << std::setw(w_loc) << loc << "\t[" << std::setw(w_total + 2) << file.lines.total << " ]  " << file.path.generic_string() << "\n";
 			}
 			std::cout << std::setw(w_loc);
 		}
 		std::cout << (cfg::test(cfg::flag::blanks) ? result.totals.lines.loc + result.totals.lines.empty : result.totals.lines.loc);
 		char const* loc_msg = cfg::test(cfg::flag::blanks) ? "total lines of code (including blanks)" : "total lines of code";
-		DOIF(cfg::test(cfg::flag::verbose), std::cout << "\t[ " << std::setw(w_total) << result.totals.lines.total << " ]  " << loc_msg);
+		DOIF(cfg::test(cfg::flag::verbose), std::cout << "\t[" << std::setw(w_total + 2) << result.totals.lines.total << " ]  " << loc_msg);
 		std::cout << "\n";
 	}
 }
