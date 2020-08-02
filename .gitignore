@@ -1,0 +1,8 @@
+**/.vs/*
+**/.vscode/*
+**/compile_commands.json
+**/.clangd
+Testing/*
+build/*
+out/*
+.editorconfig
