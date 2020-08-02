@@ -1,6 +1,10 @@
 #include <cctype>
 #include <fstream>
+#include <mutex>
 #include <string>
+#include <stdexcept>
+#include <thread>
+#include <async_queue.hpp>
 #include <line_counter.hpp>
 
 namespace
@@ -137,21 +141,100 @@ std::size_t width(std::size_t number)
 	}
 	return ret;
 }
+
+struct worker final
+{
+	std::thread thread;
+
+	worker() = default;
+
+	worker(loc::async_queue& out_queue)
+	{
+		thread = std::thread([this, &out_queue]() { work(out_queue); });
+	}
+
+	worker(worker&&) = default;
+	worker& operator=(worker&&) = default;
+
+	~worker()
+	{
+		if (thread.joinable())
+		{
+			thread.join();
+		}
+	}
+
+	void work(loc::async_queue& out_queue)
+	{
+		while (auto task = out_queue.pop())
+		{
+			if (!task)
+			{
+				break;
+			}
+			task();
+		}
+	}
+};
+
+loc::async_queue g_queue;
+std::deque<worker> g_workers;
 } // namespace
 
 loc::result loc::process(std::deque<stdfs::path> file_paths)
 {
 	result ret;
-	for (auto& file_path : file_paths)
-	{
+	lockable mutex;
+	auto process_file = [&ret, &mutex](auto iter) {
+		auto& file_path = *iter;
 		auto file = count_lines(std::move(file_path));
+		auto lock = mutex.lock();
 		ret.totals.lines.total += file.lines.total;
 		ret.totals.lines.loc += file.lines.loc;
 		ret.totals.lines.empty += file.lines.empty;
-		ret.totals.max_widths.total = std::max(ret.totals.max_widths.total, width(file.lines.total));
-		ret.totals.max_widths.loc = std::max(ret.totals.max_widths.loc, width(file.lines.loc));
-		ret.totals.max_widths.empty = std::max(ret.totals.max_widths.empty, width(file.lines.empty));
 		ret.files.push_back(std::move(file));
+	};
+	bool const use_threads = !cfg::test(cfg::flag::one_thread) && file_paths.size();
+	loc::log(cfg::test(cfg::flag::debug), "  -- parsing ", file_paths.size(), " files\n");
+	std::size_t count = 0;
+	if (use_threads && g_workers.empty())
+	{
+		int count = (int)std::thread::hardware_concurrency() - 1;
+		loc::log(cfg::test(cfg::flag::debug), "  -- launching ", count, " worker threads\n");
+		for (; count > 0; --count)
+		{
+			g_workers.push_back(worker(g_queue));
+		}
 	}
+	for (auto iter = file_paths.begin(); iter != file_paths.end(); ++iter)
+	{
+		if (use_threads)
+		{
+			g_queue.push([iter, process_file]() { process_file(iter); });
+		}
+		else
+		{
+			process_file(iter);
+		}
+		++count;
+	}
+	if (use_threads)
+	{
+		while (!g_queue.empty())
+		{
+			auto task = g_queue.pop();
+			task();
+		}
+		auto residue = g_queue.flush();
+		g_workers.clear();
+		loc::log(cfg::test(cfg::flag::debug), "  -- worker threads completed\n");
+		for (auto& task : residue)
+		{
+			task();
+		}
+	}
+	loc::log(cfg::test(cfg::flag::debug), "\n");
+	ret.totals.max_widths.total = width(ret.totals.lines.total);
+	ret.totals.max_widths.loc = width(ret.totals.lines.loc);
 	return ret;
 }
