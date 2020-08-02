@@ -60,6 +60,7 @@ enum class flag
 
 inline std::bitset<(std::size_t)flag::count_> g_flags;
 inline std::array<std::string_view, (std::size_t)flag::count_> const g_flag_names = {"blanks", "verbose", "debug", "help"};
+inline constexpr std::array g_skip_ext = {".jpg", ".png", ".tga", ".pdf", ".exe", ".dll", ".zip", ".tar", ".a", ".so", ".obj", ".mtl", ".ninja", ".bin"};
 
 inline std::unordered_set<loc::ignore_line> g_ignore_lines;
 inline std::unordered_set<loc::ignore_block, loc::pair_hasher> g_ignore_blocks;

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -68,6 +69,38 @@ bool parse_options(ap::key const& key, ap::value const& value)
 	return false;
 }
 
+bool skip_file(stdfs::path const& path)
+{
+	if (!stdfs::is_regular_file(path))
+	{
+		return true;
+	}
+	auto const ext = path.extension();
+	if (!ext.empty())
+	{
+		auto const ext_str = ext.generic_string();
+		if (std::any_of(cfg::g_skip_ext.begin(), cfg::g_skip_ext.end(), [ext_str](auto skip) -> bool { return std::string_view(skip) == ext_str; }))
+		{
+			return true;
+		}
+	}
+	auto p = path;
+	while (!p.empty() && p.has_parent_path())
+	{
+		p = p.parent_path();
+		auto const name = p.filename().generic_string();
+		if (name.size() > 1 && name.at(0) == '.')
+		{
+			return true;
+		}
+	}
+	if (path.generic_string().find(".git") != std::string::npos)
+	{
+		return true;
+	}
+	return false;
+}
+
 std::deque<stdfs::path> file_list(std::deque<ap::entry> const& entries)
 {
 	std::deque<stdfs::path> ret;
@@ -76,14 +109,30 @@ std::deque<stdfs::path> file_list(std::deque<ap::entry> const& entries)
 	{
 		if (!reading_files && !parse_options(key, value))
 		{
+			auto k = key;
+			if (key == "." || key == "..")
+			{
+				k += "/";
+			}
+			if (stdfs::is_directory(stdfs::absolute(k)))
+			{
+				for (auto& path : stdfs::recursive_directory_iterator(k))
+				{
+					if (!skip_file(path))
+					{
+						DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- tracking " << path.path().generic_string() << "\n");
+						ret.push_back(std::move(path));
+					}
+				}
+				return ret;
+			}
 			reading_files = true;
 		}
 		if (reading_files)
 		{
-			auto file_path = stdfs::absolute(key);
-			if (stdfs::is_regular_file(file_path))
+			if (!skip_file(stdfs::absolute(key)))
 			{
-				ret.push_back(std::move(file_path));
+				ret.push_back(std::move(key));
 			}
 		}
 	}
@@ -114,9 +163,10 @@ void run_loc(std::deque<stdfs::path> file_paths)
 	{
 		cfg::g_ignore_blocks = {{"/*", "*/"}};
 	}
-	auto const result = loc::process(std::move(file_paths));
+	auto result = loc::process(std::move(file_paths));
 	if (result.totals.lines.loc > 0 || cfg::test(cfg::flag::verbose))
 	{
+		DOIF(cfg::test(cfg::flag::verbose), result.totals.max_widths.loc += 2;);
 		auto const w_loc = cfg::test(cfg::flag::blanks) ? result.totals.max_widths.loc + result.totals.max_widths.empty : result.totals.max_widths.loc;
 		auto const w_total = result.totals.max_widths.total;
 		if (cfg::test(cfg::flag::verbose))

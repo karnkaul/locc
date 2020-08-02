@@ -13,11 +13,11 @@ std::deque<ap::entry> ap::parse(int argc, char const* const* argv)
 	for (int i = 0; i < argc; ++i)
 	{
 		std::string_view token = argv[i];
-		if (token.size() > 1)
+		if (!token.empty())
 		{
 			if (token.at(0) == '-')
 			{
-				if (token.at(1) == '-')
+				if (token.size() > 1 && token.at(1) == '-')
 				{
 					token = token.substr(2);
 					key k;

@@ -87,10 +87,10 @@ bool count_line(std::string_view line, loc::ignore_block const*& out_ignoring)
 	return false;
 }
 
-loc::file count_lines(stdfs::path file)
+loc::file count_lines(stdfs::path file_path)
 {
 	loc::file ret;
-	std::ifstream f(file, std::ios::in);
+	std::ifstream f(stdfs::absolute(file_path), std::ios::in);
 	if (f.good())
 	{
 		ret.lines.loc = ret.lines.total = 1;
@@ -123,7 +123,7 @@ loc::file count_lines(stdfs::path file)
 			}
 		}
 	}
-	ret.path = std::move(file);
+	ret.path = std::move(file_path);
 	return ret;
 }
 
