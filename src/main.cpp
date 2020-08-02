@@ -6,15 +6,6 @@
 #include <common.hpp>
 #include <line_counter.hpp>
 
-#define DOIF(cond, expr) \
-	do                   \
-	{                    \
-		if (cond)        \
-		{                \
-			expr;        \
-		}                \
-	} while (0);
-
 namespace
 {
 void help_summary()
@@ -39,15 +30,28 @@ bool parse_options(ap::key const& key, ap::value const& value)
 			auto r = value.substr(comma + 1);
 			cfg::g_ignore_blocks.insert({std::move(l), std::move(r)});
 		}
-		else
+		else if (!value.empty())
 		{
 			cfg::g_ignore_lines.insert(value);
+		}
+		return true;
+	}
+	else if (match_any(key, "skip-dir"))
+	{
+		if (!value.empty())
+		{
+			cfg::g_skip_dirs.insert(std::move(value));
 		}
 		return true;
 	}
 	else if (match_any(key, "b", "blanks"))
 	{
 		cfg::set(cfg::flag::blanks);
+		return true;
+	}
+	else if (match_any(key, "o", "one-thread"))
+	{
+		cfg::set(cfg::flag::one_thread);
 		return true;
 	}
 	else if (match_any(key, "v", "verbose"))
@@ -89,11 +93,12 @@ bool skip_file(stdfs::path const& path)
 	while (!p.empty() && p.has_parent_path())
 	{
 		auto const name = p.filename().generic_string();
+		auto const path = p.generic_string();
 		if (name.size() > 1 && name.at(0) == '.' && name.at(1) != '.')
 		{
 			return true;
 		}
-		if (std::any_of(cfg::g_skip_dirs.begin(), cfg::g_skip_dirs.end(), [name](auto skip) -> bool { return std::string_view(skip) == name; }))
+		if (std::any_of(cfg::g_skip_dirs.begin(), cfg::g_skip_dirs.end(), [path](auto skip) -> bool { return path.find(skip) != loc::null_index; }))
 		{
 			return true;
 		}
@@ -146,7 +151,7 @@ std::deque<stdfs::path> file_list(std::deque<ap::entry> const& entries)
 
 void print_flags()
 {
-	std::cout << "-- flags:";
+	std::cout << "\n  -- flags:";
 	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i)
 	{
 		DOIF(cfg::test((cfg::flag)i), std::cout << " " << cfg::g_flag_names.at(i));

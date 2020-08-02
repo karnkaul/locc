@@ -3,7 +3,7 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 
 project(loc)
 
-if(PLATFORM STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		add_definitions(-D_GLIBCXX_DEBUG)
 	endif()
@@ -15,8 +15,8 @@ add_executable(loc ${SOURCES})
 target_compile_features(loc PUBLIC cxx_std_17)
 target_include_directories(loc PRIVATE src)
 
-if(PLATFORM STREQUAL "Linux")
-	target_link_libraries(loc PRIVATE stdc++fs)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	target_link_libraries(loc PRIVATE pthread stdc++fs)
 	target_compile_options(loc PRIVATE -fPIC)
 endif()
 

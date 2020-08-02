@@ -1,11 +1,25 @@
 #include <cctype>
 #include <fstream>
+#include <iostream>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <line_counter.hpp>
 
 namespace
 {
 constexpr std::size_t g_DEBUG_skip_to_line = 124;
+
+struct lockable final
+{
+	std::mutex mutex;
+	using locker = std::scoped_lock<decltype(mutex)>;
+
+	locker lock()
+	{
+		return locker(mutex);
+	}
+};
 
 bool ignore_line(std::string_view line)
 {
@@ -142,9 +156,11 @@ std::size_t width(std::size_t number)
 loc::result loc::process(std::deque<stdfs::path> file_paths)
 {
 	result ret;
-	for (auto& file_path : file_paths)
-	{
+	lockable mutex;
+	auto process_file = [&ret, &mutex](auto iter) {
+		auto& file_path = *iter;
 		auto file = count_lines(std::move(file_path));
+		auto lock = mutex.lock();
 		ret.totals.lines.total += file.lines.total;
 		ret.totals.lines.loc += file.lines.loc;
 		ret.totals.lines.empty += file.lines.empty;
@@ -152,6 +168,30 @@ loc::result loc::process(std::deque<stdfs::path> file_paths)
 		ret.totals.max_widths.loc = std::max(ret.totals.max_widths.loc, width(file.lines.loc));
 		ret.totals.max_widths.empty = std::max(ret.totals.max_widths.empty, width(file.lines.empty));
 		ret.files.push_back(std::move(file));
+	};
+	bool const use_threads = !cfg::test(cfg::flag::one_thread) && file_paths.size();
+	std::deque<std::thread> threads;
+	DOIF(cfg::test(cfg::flag::debug) && use_threads, std::cout << "  -- launching " << file_paths.size() << " worker threads\n");
+	DOIF(cfg::test(cfg::flag::debug), std::cout << "  -- parsing " << file_paths.size() << " files\n");
+	for (auto iter = file_paths.begin(); iter != file_paths.end(); ++iter)
+	{
+		if (use_threads)
+		{
+			threads.push_back(std::thread([iter, &process_file]() { process_file(iter); }));
+		}
+		else
+		{
+			process_file(iter);
+		}
 	}
+	for (auto& thread : threads)
+	{
+		if (thread.joinable())
+		{
+			thread.join();
+		}
+	}
+	DOIF(cfg::test(cfg::flag::debug) && !threads.empty(), std::cout << "  -- worker threads completed\n");
+	DOIF(cfg::test(cfg::flag::debug), std::cout << "\n");
 	return ret;
 }
