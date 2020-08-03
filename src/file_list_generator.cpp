@@ -46,10 +46,10 @@ bool skip_file(stdfs::path const& path)
 std::deque<stdfs::path> locc::file_list(std::deque<locc::entry> const& entries)
 {
 	std::deque<stdfs::path> ret;
-	bool reading_files = false;
+	cfg::g_mode = cfg::mode::implt;
 	for (auto& [key, value] : entries)
 	{
-		if (!reading_files)
+		if (cfg::g_mode == cfg::mode::implt)
 		{
 			auto k = key;
 			if (key == "." || key == "..")
@@ -68,7 +68,7 @@ std::deque<stdfs::path> locc::file_list(std::deque<locc::entry> const& entries)
 							auto path = iter->path();
 							if (!skip_file(path))
 							{
-								locc::log(cfg::test(cfg::flag::debug), "  -- tracking ", path.generic_string(), "\n");
+								locc::log(cfg::test(cfg::flag::debug) && cfg::test(cfg::flag::verbose), "  -- tracking ", path.generic_string(), "\n");
 								ret.push_back(std::move(path));
 							}
 						}
@@ -81,11 +81,11 @@ std::deque<stdfs::path> locc::file_list(std::deque<locc::entry> const& entries)
 				}
 				return ret;
 			}
-			reading_files = true;
+			cfg::g_mode = cfg::mode::explt;
 		}
-		if (reading_files)
+		if (cfg::g_mode == cfg::mode::explt)
 		{
-			if (!skip_file(stdfs::absolute(key)))
+			if (stdfs::is_regular_file(stdfs::absolute(key)))
 			{
 				ret.push_back(std::move(key));
 			}

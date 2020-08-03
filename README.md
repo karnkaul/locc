@@ -28,7 +28,7 @@ loc [options] <directory> (2)
 - `[-d|--debug]`: Random debug output
 - `[-h|--help]`: Display help
 
-*\*Supports multiple instances of same argument type*
+> _\*Supports multiple instances of the same argument_
 
 ### Building
 
