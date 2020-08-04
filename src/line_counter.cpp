@@ -9,17 +9,6 @@
 
 namespace
 {
-std::size_t width(std::size_t number)
-{
-	std::size_t ret = 0;
-	while (number > 0)
-	{
-		number /= 10;
-		++ret;
-	}
-	return ret;
-}
-
 struct worker final
 {
 	std::thread thread;
@@ -236,7 +225,5 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 		}
 	}
 	locc::log(cfg::test(cfg::flag::debug), "\n");
-	ret.totals.max_widths.total = width(ret.totals.lines.total);
-	ret.totals.max_widths.code = width(ret.totals.lines.code);
 	return ret;
 }

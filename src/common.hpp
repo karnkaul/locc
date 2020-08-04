@@ -79,11 +79,6 @@ struct result final
 	std::deque<file> files;
 	struct
 	{
-		struct
-		{
-			std::size_t total = {};
-			std::size_t code = {};
-		} max_widths;
 		lines lines;
 	} totals;
 
@@ -177,6 +172,7 @@ inline std::unordered_set<locc::comment_block, pair_hasher> g_comment_blocks;
 
 inline std::unordered_set<std::string> g_skip_exts = {".exe", ".bin", ".o",	  ".obj", ".a",	  ".lib", ".so",	".dll", ".jpg",
 													  ".png", ".tga", ".mtl", ".pdf", ".zip", ".tar", ".ninja", ".txt", ".md"};
+inline std::unordered_set<std::string> g_ext_passlist;
 inline std::unordered_set<std::string> g_skip_substrs = {"build", "Build", "out", "CMakeFiles"};
 
 inline std::unordered_map<locc::ext, locc::ext_group> g_ext_groups = {{".c", "c-style"},   {".cc", "c-style"},	 {".cpp", "c-style"},

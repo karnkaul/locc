@@ -20,6 +20,11 @@ bool skip_file(stdfs::path const& path)
 	{
 		return true;
 	}
+	if (cfg::g_mode == cfg::mode::implt
+		&& std::none_of(cfg::g_ext_passlist.begin(), cfg::g_ext_passlist.end(), [ext_str](auto skip) -> bool { return skip == ext_str; }))
+	{
+		return true;
+	}
 	auto p = path;
 	while (!p.empty() && p.has_parent_path())
 	{

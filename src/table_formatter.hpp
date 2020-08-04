@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 using sv = std::string_view;
 
@@ -22,10 +23,13 @@ public:
 		bool left_aligned = false;
 	};
 
+	using fill = std::pair<char, uint8_t>;
+
 public:
-	std::string m_col_padding = " ";
-	std::string m_row_prefix = " ";
 	std::string m_col_separator = "|";
+	fill m_row_prefix = {' ', 1};
+	char m_col_pad = ' ';
+	char m_header_pad = ' ';
 	char m_header_separator = '-';
 	bool m_show_header_separator = true;
 
@@ -48,6 +52,8 @@ public:
 		add_row_impl(std::forward<Arg>(arg), std::forward<Args>(args)...);
 		m_write_head = 0;
 	}
+
+	void clear();
 
 	std::string to_string() const;
 
@@ -143,6 +149,6 @@ private:
 	uint16_t table_width() const;
 
 	template <typename F>
-	void serialise_row(std::ostringstream& out_str, F cell_value) const;
+	void serialise_row(std::ostringstream& out_str, char fill, F cell_value) const;
 };
 } // namespace locc

@@ -108,6 +108,17 @@ bool parse_options(locc::key const& key, locc::value value)
 
 std::deque<stdfs::path> file_list(std::deque<locc::entry> entries)
 {
+	for (auto& [ext, _] : cfg::g_ext_groups)
+	{
+		cfg::g_ext_passlist.insert(ext);
+	}
+	for (auto& [ext, _] : cfg::g_ext_config)
+	{
+		if (ext.at(0) == '.')
+		{
+			cfg::g_ext_passlist.insert(ext);
+		}
+	}
 	for (auto iter = entries.begin(); iter != entries.end();)
 	{
 		auto& [key, value] = *iter;
@@ -150,11 +161,9 @@ void run_loc(std::deque<stdfs::path> file_paths)
 	auto result = locc::process(std::move(file_paths));
 	if (result.totals.lines.code > 0 || cfg::test(cfg::flag::verbose))
 	{
-		auto const w_loc = cfg::test(cfg::flag::blanks) ? result.totals.max_widths.total : result.totals.max_widths.code;
-		auto const w_total = result.totals.max_widths.total;
+		locc::table_formatter tf;
 		if (cfg::test(cfg::flag::verbose))
 		{
-			locc::table_formatter tf;
 			tf.add_column(" File", true);
 			tf.add_column("LOC");
 			tf.add_column("Comments");
@@ -163,19 +172,32 @@ void run_loc(std::deque<stdfs::path> file_paths)
 			{
 				tf.add_row(file.path.generic_string(), file.lines.code, file.lines.comments, file.lines.total);
 			}
-			locc::log(tf.to_string());
-			locc::log("\n  ");
+			locc::log("\n", tf.to_string(), "\n");
+			tf.clear();
 		}
-		locc::log(!cfg::test(cfg::flag::quiet), std::setw(w_loc));
-		locc::log_force(result.totals.lines.code);
-		char const* loc_msg = cfg::test(cfg::flag::blanks) ? "total lines of code (including blanks)" : "total lines of code";
-		locc::log(!cfg::test(cfg::flag::quiet), "  [ ", std::setw(w_total), result.totals.lines.total, " ]  ", loc_msg);
-		locc::log("\n");
-		auto dist = result.transform_dist();
-		locc::log("Ext | LOC | Total | Comments | Ratio\n");
-		for (auto const& [ext, data] : dist)
+		if (!cfg::test(cfg::flag::quiet))
 		{
-			locc::log(ext, " : ", data.counts.lines.code, ", ", data.counts.lines.total, ", ", data.counts.lines.comments, ", ", data.ratio, "\n");
+			auto dist = result.transform_dist();
+			tf.add_column("Extension", true);
+			tf.add_column("LOC");
+			tf.add_column("Total");
+			tf.add_column("Comments");
+			tf.add_column("Ratio");
+			locc::result::ext_data total;
+			for (auto const& [ext, data] : dist)
+			{
+				tf.add_row(ext, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.ratio);
+				total.counts.lines.code += data.counts.lines.code;
+				total.counts.lines.total += data.counts.lines.total;
+				total.counts.lines.comments += data.counts.lines.comments;
+				total.ratio += data.ratio;
+			}
+			tf.add_row("Total", total.counts.lines.code, total.counts.lines.total, total.counts.lines.comments, total.ratio);
+			locc::log("\n", tf.to_string(), "\n");
+		}
+		else
+		{
+			locc::log_force(result.totals.lines.code);
 		}
 	}
 }
