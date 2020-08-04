@@ -1,7 +1,7 @@
-#include <table_formatter/table_formatter.hpp>
 #include <app/config.hpp>
 #include <build_version.hpp>
 #include "ui.hpp"
+#include "table_formatter/table_formatter.hpp"
 
 namespace
 {
