@@ -6,6 +6,7 @@
 #include <common.hpp>
 #include <file_list_generator.hpp>
 #include <line_counter.hpp>
+#include <table_formatter.hpp>
 
 namespace
 {
@@ -133,7 +134,7 @@ void print_flags()
 	{
 		locc::log(" [none]");
 	}
-	locc::log("\n mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode), "\n\n");
+	locc::log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode), "\n\n");
 }
 
 void run_loc(std::deque<stdfs::path> file_paths)
@@ -153,12 +154,17 @@ void run_loc(std::deque<stdfs::path> file_paths)
 		auto const w_total = result.totals.max_widths.total;
 		if (cfg::test(cfg::flag::verbose))
 		{
+			locc::table_formatter tf;
+			tf.add_column(" File", true);
+			tf.add_column("LOC");
+			tf.add_column("Comments");
+			tf.add_column("Total");
 			for (auto const& file : result.files)
 			{
-				auto const loc = (cfg::test(cfg::flag::blanks) ? file.lines.code + file.lines.blank : file.lines.code);
-				locc::log("  ", std::setw(w_loc), loc, "  [ ", std::setw(w_total), file.lines.total, " ]  ", file.path.generic_string(), "\n");
+				tf.add_row(file.path.generic_string(), file.lines.code, file.lines.comments, file.lines.total);
 			}
-			locc::log("  ");
+			locc::log(tf.to_string());
+			locc::log("\n  ");
 		}
 		locc::log(!cfg::test(cfg::flag::quiet), std::setw(w_loc));
 		locc::log_force(result.totals.lines.code);

@@ -173,6 +173,10 @@ locc::file count_lines(stdfs::path file_path)
 locc::result locc::process(std::deque<stdfs::path> file_paths)
 {
 	result ret;
+	if (file_paths.empty())
+	{
+		return ret;
+	}
 	lockable mutex;
 	bool const blanks = cfg::test(cfg::flag::blanks);
 	auto process_file = [&ret, &mutex, blanks](auto iter) {
@@ -194,7 +198,7 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 		data.counts.lines.total += file.lines.total;
 		ret.files.push_back(std::move(file));
 	};
-	int thread_count = cfg::test(cfg::flag::one_thread) ? 0 : (int)std::min((std::size_t)std::thread::hardware_concurrency() - 1, file_paths.size());
+	int thread_count = cfg::test(cfg::flag::one_thread) ? 0 : (int)std::min((std::size_t)std::thread::hardware_concurrency() - 1, file_paths.size() - 1);
 	locc::log(cfg::test(cfg::flag::debug), "  -- parsing ", file_paths.size(), " files\n");
 	if (thread_count > 0)
 	{
