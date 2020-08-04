@@ -39,7 +39,7 @@ private:
 	std::size_t m_write_head = 0;
 
 public:
-	void add_column(std::string header, bool left_aligned = false, uint8_t precision = 3);
+	int16_t add_column(std::string header, bool left_aligned = false, uint8_t precision = 3);
 
 	template <typename Arg, typename... Args>
 	void add_row(Arg&& arg, Args&&... args)
@@ -54,6 +54,7 @@ public:
 	}
 
 	void clear();
+	bool sort(uint8_t col_index, bool descending);
 
 	std::string to_string() const;
 
@@ -107,7 +108,7 @@ private:
 			row.push_back({});
 		}
 		auto& cell = row.at(m_write_head++);
-		if constexpr (std::is_integral_v<T>)
+		if constexpr (std::is_integral_v<std::decay_t<T>>)
 		{
 			cell = std::to_string(arg);
 		}
@@ -122,9 +123,9 @@ private:
 		else
 		{
 			std::stringstream str;
-			if constexpr (std::is_floating_point_v<T>)
+			str.precision(col.precision);
+			if constexpr (std::is_floating_point_v<std::decay_t<T>>)
 			{
-				str.precision(col.precision);
 				str << std::fixed << arg;
 			}
 			else

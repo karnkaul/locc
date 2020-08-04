@@ -225,5 +225,9 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 		}
 	}
 	locc::log(cfg::test(cfg::flag::debug), "\n");
+	for (auto& [_, data] : ret.dist)
+	{
+		data.ratio.divide(data.counts.lines, ret.totals.lines);
+	}
 	return ret;
 }

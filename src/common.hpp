@@ -44,17 +44,38 @@ using entry_view = std::pair<key_view, value_view>;
 
 constexpr std::size_t null_index = std::string::npos;
 
-struct lines
+template <typename T>
+struct lines_t
 {
-	std::size_t code = {};
-	std::size_t comments = {};
-	std::size_t total = {};
+	T code = {};
+	T comments = {};
+	T total = {};
+
+	void add(lines_t<T> const& rhs)
+	{
+		code += rhs.code;
+		comments += rhs.comments;
+		total += rhs.total;
+	}
+
+	template <typename U>
+	void divide(lines_t<U> const& num, lines_t<U> const& den)
+	{
+		code = (T)num.code / (T)den.code;
+		comments = (T)num.comments / (T)den.comments;
+		total = (T)num.total / (T)den.total;
+	}
 };
 
-struct lines_blank final : lines
+template <typename T>
+struct lines_blank_t : lines_t<T>
 {
-	std::size_t blank = {};
+	T blank = {};
 };
+
+using lines = lines_t<std::size_t>;
+using lines_blank = lines_blank_t<std::size_t>;
+using ratio = lines_t<float>;
 
 struct file final
 {
@@ -71,7 +92,7 @@ struct result final
 			lines lines;
 			std::size_t files = {};
 		} counts;
-		float ratio = {};
+		ratio ratio;
 	};
 	using distribution = std::unordered_map<std::string, ext_data>;
 
@@ -154,31 +175,26 @@ enum class mode
 	count_
 };
 
-struct pair_hasher final
-{
-	std::size_t operator()(locc::comment_block const& pair) const
-	{
-		return std::hash<std::string>()(pair.first) ^ std::hash<std::string>()(pair.second);
-	}
-};
-
 inline std::bitset<(std::size_t)flag::count_> g_flags;
 inline mode g_mode = mode::explt;
 inline std::array<std::string_view, (std::size_t)flag::count_> const g_flag_names = {"blanks", "one_thread", "verbose", "debug", "quiet", "help"};
 inline std::array<std::string_view, (std::size_t)mode::count_> const g_mode_names = {"explicit", "implicit"};
 
 inline std::unordered_set<locc::comment_line> g_comment_lines;
-inline std::unordered_set<locc::comment_block, pair_hasher> g_comment_blocks;
 
-inline std::unordered_set<std::string> g_skip_exts = {".exe", ".bin", ".o",	  ".obj", ".a",	  ".lib", ".so",	".dll", ".jpg",
-													  ".png", ".tga", ".mtl", ".pdf", ".zip", ".tar", ".ninja", ".txt", ".md"};
+inline std::unordered_set<std::string> g_skip_exts = {".exe", ".bin", ".o",	  ".obj", ".a",	  ".lib", ".so",  ".dll",	".class",
+													  ".jpg", ".png", ".tga", ".mtl", ".pdf", ".zip", ".tar", ".ninja", ".md"};
 inline std::unordered_set<std::string> g_ext_passlist;
 inline std::unordered_set<std::string> g_skip_substrs = {"build", "Build", "out", "CMakeFiles"};
 
-inline std::unordered_map<locc::ext, locc::ext_group> g_ext_groups = {{".c", "c-style"},   {".cc", "c-style"},	 {".cpp", "c-style"},
-																	  {".h", "c-style"},   {".hpp", "c-style"},	 {".inl", "c-style"},
-																	  {".tpp", "c-style"}, {".java", "c-style"}, {".cs", "c-style"}};
-inline locc::ext_config g_ext_config = {{"c-style", {{"//"}, {{"/*", "*/"}}}}};
+inline std::unordered_map<locc::ext, locc::ext_group> g_ext_groups = {
+	{".c", "c-style"},	 {".cc", "c-style"},	{".cpp", "c-style"},   {".h", "c-style"},	   {".hpp", "c-style"},
+	{".inl", "c-style"}, {".tpp", "c-style"},	{".java", "c-style"},  {".cs", "c-style"},	   {".js", "c-style"},
+	{".css", "c-style"}, {".sh", "bash-style"}, {".py", "bash-style"}, {".txt", "bash-style"}, {".cmake", "bash-style"}};
+inline locc::ext_config g_ext_config = {
+	{"c-style", {{"//"}, {{"/*", "*/"}}}},
+	{"bash-style", {{"#"}, {}}},
+};
 
 inline locc::config const& find_config(locc::ext const& extension)
 {

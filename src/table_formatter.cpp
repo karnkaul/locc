@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
+#include <vector>
 #include <table_formatter.hpp>
 
 namespace locc
@@ -27,10 +29,11 @@ std::ostream& operator<<(std::ostream& out_str, fill_str const& fill)
 }
 } // namespace
 
-void table_formatter::add_column(std::string header, bool left_aligned, uint8_t precision)
+int16_t table_formatter::add_column(std::string header, bool left_aligned, uint8_t precision)
 {
 	m_cols.push_back({std::move(header), 0, precision, left_aligned});
 	m_cols.back().width = (uint8_t)m_cols.back().header.size();
+	return (int16_t)(m_cols.size() - 1);
 }
 
 template <typename F>
@@ -73,6 +76,23 @@ void table_formatter::clear()
 	m_write_head = 0;
 }
 
+bool table_formatter::sort(uint8_t col_index, bool descending)
+{
+	if (col_index > 0 && col_index < (int8_t)m_cols.size())
+	{
+		std::vector<row> rows;
+		rows.reserve(m_rows.size());
+		std::move(m_rows.begin(), m_rows.end(), std::back_inserter(rows));
+		auto index = (std::size_t)col_index;
+		std::sort(rows.begin(), rows.end(), [index, descending](row const& lhs, row const& rhs) -> bool {
+			return descending ? lhs.at(index) > rhs.at(index) : lhs.at(index) < rhs.at(index);
+		});
+		std::move(rows.begin(), rows.end(), m_rows.begin());
+		return true;
+	}
+	return false;
+}
+
 std::string table_formatter::to_string() const
 {
 	if (m_cols.empty())
@@ -81,7 +101,6 @@ std::string table_formatter::to_string() const
 	}
 	std::ostringstream str;
 	uint16_t tw = table_width();
-
 	static std::string const blank_str;
 	serialise_row(str, m_header_pad, [](col const& col, std::size_t) -> std::string const& { return col.header; });
 
