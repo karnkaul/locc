@@ -23,7 +23,7 @@ Examples of output (may be out of date until release):
 Linux kernel (20 million LOC)
 
 ```
-$ time locc linux-master
+$ time ./locc linux-master
 
  | Extension |      LOC |    Total | Comments | Files | Ratio |
  --------------------------------------------------------------
@@ -39,43 +39,47 @@ $ time locc linux-master
  | Total     | 21171057 | 26190619 |   192303 | 53612 | 1.000 |
 
 
-real    0m0.747s
-user    0m3.521s
-sys     0m0.592s
+real    0m0.699s
+user    0m3.462s
+sys     0m0.558s
 
-$ time locc -q linux-master
+$ time ./locc -q linux-master
 21171057
-real    0m0.724s
-user    0m3.580s
-sys     0m0.564s
+real    0m0.690s
+user    0m3.431s
+sys     0m0.583s
 ```
 
 This repo (at some point in the past)
 
 ```
-locc -v .
- | File                          | LOC | Comments | Total |
- ----------------------------------------------------------
- | ./src/file_list_generator.hpp |   7 |        0 |     8 |
- | ./CMakeLists.txt              |  25 |        0 |    30 |
- | ./src/line_counter.hpp        |   7 |        0 |     8 |
- | ./src/args_parser.hpp         |  12 |        0 |    14 |
- | ./src/args_parser.cpp         |  71 |        0 |    73 |
- | ./src/async_queue.hpp         |  65 |        0 |    72 |
- | ./src/file_list_generator.cpp |  99 |        0 |   101 |
- | ./src/table_formatter.hpp     | 139 |        0 |   156 |
- | ./src/table_formatter.cpp     | 109 |        0 |   118 |
- | ./src/main.cpp                | 224 |        0 |   232 |
- | ./src/common.hpp              | 269 |        0 |   317 |
- | ./src/line_counter.cpp        | 223 |        0 |   234 |
+$ ./locc -v -e=.md .
+
+ | File                                      | LOC | Total | Comments |
+ ----------------------------------------------------------------------
+ | ./CMakeLists.txt                          |  25 |    30 |        0 |
+ | ./README.md                               |  80 |   108 |        0 |
+ | ./src/app/common.hpp                      | 249 |   294 |        0 |
+ | ./src/app/file_list_generator.cpp         |  98 |   100 |        0 |
+ | ./src/app/file_list_generator.hpp         |  10 |    13 |        0 |
+ | ./src/app/line_counter.cpp                | 227 |   239 |        0 |
+ | ./src/app/line_counter.hpp                |  10 |    13 |        0 |
+ | ./src/args_parser/args_parser.hpp         | 101 |   109 |        0 |
+ | ./src/async_queue/async_queue.hpp         |  89 |   100 |        0 |
+ | ./src/main.cpp                            |  71 |    74 |        0 |
+ | ./src/table_formatter/table_formatter.cpp |  95 |   103 |        0 |
+ | ./src/table_formatter/table_formatter.hpp | 116 |   133 |        0 |
+ | ./src/ui/ui.cpp                           | 141 |   147 |        0 |
+ | ./src/ui/ui.hpp                           |  11 |    13 |        0 |
 
 
  | Extension |  LOC | Total | Comments | Files | Ratio |
  -------------------------------------------------------
- | .cpp      |  726 |   758 |        0 |     5 | 0.581 |
- | .hpp      |  499 |   575 |        0 |     6 | 0.399 |
- | .txt      |   25 |    30 |        0 |     1 | 0.020 |
- | Total     | 1250 |  1363 |        0 |    12 | 1.000 |
+ | .cpp      |  632 |   663 |        0 |     5 | 0.478 |
+ | .hpp      |  586 |   675 |        0 |     7 | 0.443 |
+ | .md       |   80 |   108 |        0 |     1 | 0.060 |
+ | .txt      |   25 |    30 |        0 |     1 | 0.019 |
+ | Total     | 1323 |  1476 |        0 |    14 | 1.000 |
 ```
 
 ### Options
@@ -83,7 +87,7 @@ locc -v .
 `locc` supports a few command line parameters:
 
 - `--skip-substr=[substr0,substr1,...]`: Add path substring pattern to ignore
-- `--skip-ext=[ext0,ext1,...]`: Add specific extensions to ignore
+- `[-e|--extensions]=[.ext0,.ext1,...]`: Additional extensions to count in implicit mode
 - `[-o|--one-thread]`: Run everything on the main thread
 - `[-b|--blanks]`: Include blank lines as lines of code
 - `[-q|--quiet]`: Print nothing but total lines of code

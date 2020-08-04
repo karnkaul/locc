@@ -1,11 +1,15 @@
 #include <cctype>
 #include <fstream>
+#include <functional>
 #include <mutex>
 #include <string>
 #include <stdexcept>
 #include <thread>
-#include <async_queue.hpp>
-#include <line_counter.hpp>
+#include <async_queue/async_queue.hpp>
+#include <app/common.hpp>
+#include "line_counter.hpp"
+
+using async_queue = kt::async_queue<std::function<void()>>;
 
 namespace
 {
@@ -14,7 +18,7 @@ struct worker final
 	std::thread thread;
 
 	worker() = default;
-	worker(locc::async_queue& out_queue)
+	worker(async_queue& out_queue)
 	{
 		thread = std::thread([this, &out_queue]() { work(out_queue); });
 	}
@@ -28,7 +32,7 @@ struct worker final
 		}
 	}
 
-	void work(locc::async_queue& out_queue)
+	void work(async_queue& out_queue)
 	{
 		while (auto task = out_queue.pop())
 		{
@@ -41,7 +45,7 @@ struct worker final
 	}
 };
 
-locc::async_queue g_queue;
+async_queue g_queue;
 std::deque<worker> g_workers;
 } // namespace
 
@@ -166,20 +170,20 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 	{
 		return ret;
 	}
-	lockable mutex;
+	kt::lockable mutex;
 	bool const blanks = cfg::test(cfg::flag::blanks);
 	auto process_file = [&ret, &mutex, blanks](auto iter) {
 		auto& file_path = *iter;
 		auto ext = file_path.extension();
 		auto file = count_lines(std::move(file_path));
 		auto lock = mutex.lock();
-		ret.totals.lines.total += file.lines.total;
-		ret.totals.lines.code += file.lines.code;
+		ret.totals.total += file.lines.total;
+		ret.totals.code += file.lines.code;
 		auto& data = ret.dist[ext.empty() ? "[none]" : ext.generic_string()];
 		++data.counts.files;
 		if (blanks)
 		{
-			ret.totals.lines.code += file.lines.blank;
+			ret.totals.code += file.lines.blank;
 			data.counts.lines.code += file.lines.blank;
 		}
 		data.counts.lines.code += file.lines.code;
@@ -216,7 +220,8 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 			auto task = g_queue.pop();
 			task();
 		}
-		auto residue = g_queue.flush();
+		auto residue = g_queue.clear();
+		g_queue.active(false);
 		g_workers.clear();
 		locc::log(cfg::test(cfg::flag::debug), "  -- worker threads completed\n");
 		for (auto& task : residue)
@@ -227,7 +232,7 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 	locc::log(cfg::test(cfg::flag::debug), "\n");
 	for (auto& [_, data] : ret.dist)
 	{
-		data.ratio.divide(data.counts.lines, ret.totals.lines);
+		data.ratio.divide(data.counts.lines, ret.totals);
 	}
 	return ret;
 }

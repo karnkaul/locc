@@ -34,14 +34,6 @@ struct config final
 };
 using ext_config = std::unordered_map<ext, config>;
 
-using key = std::string;
-using value = std::string;
-using entry = std::pair<key, value>;
-
-using key_view = std::string_view;
-using value_view = std::string_view;
-using entry_view = std::pair<key_view, value_view>;
-
 constexpr std::size_t null_index = std::string::npos;
 
 template <typename T>
@@ -98,10 +90,7 @@ struct result final
 
 	distribution dist;
 	std::deque<file> files;
-	struct
-	{
-		lines lines;
-	} totals;
+	lines totals;
 
 	template <template <typename...> typename Cont = std::map, typename Pred, typename... Args>
 	auto transform_dist(Pred predicate) const
@@ -172,18 +161,15 @@ enum class mode
 {
 	explt,
 	implt,
-	count_
 };
 
 inline std::bitset<(std::size_t)flag::count_> g_flags;
 inline mode g_mode = mode::explt;
-inline std::array<std::string_view, (std::size_t)flag::count_> const g_flag_names = {"blanks", "one_thread", "verbose", "debug", "quiet", "help"};
-inline std::array<std::string_view, (std::size_t)mode::count_> const g_mode_names = {"explicit", "implicit"};
+inline constexpr std::array g_flag_names = {"blanks", "one_thread", "verbose", "debug", "quiet", "help"};
+inline constexpr std::array g_mode_names = {"explicit", "implicit"};
 
 inline std::unordered_set<locc::comment_line> g_comment_lines;
 
-inline std::unordered_set<std::string> g_skip_exts = {".exe", ".bin", ".o",	  ".obj", ".a",	  ".lib", ".so",  ".dll",	".class",
-													  ".jpg", ".png", ".tga", ".mtl", ".pdf", ".zip", ".tar", ".ninja", ".md"};
 inline std::unordered_set<std::string> g_ext_passlist;
 inline std::unordered_set<std::string> g_skip_substrs = {"build", "Build", "out", "CMakeFiles"};
 
