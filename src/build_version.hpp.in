@@ -1,0 +1,9 @@
+#pragma once
+#include <string_view>
+
+namespace locc
+{
+#define LOCC_VERSION "@LOCC_VERSION@"
+
+inline std::string_view const g_version = LOCC_VERSION;
+} // namespace locc

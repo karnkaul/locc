@@ -15,6 +15,11 @@ for:
       project: locc.sln
       parallel: true
       verbosity: minimal
+    test_script:
+      - cmd: >-
+          .\Release\locc.exe -dbv . || exit 1
+
+          .\Release\locc.exe --version || exit 1
 
   - matrix:
       only:
@@ -22,6 +27,8 @@ for:
     build_script:
       - sh: cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
       - sh: echo "== Building Linux $CONFIGURATION ==" && ninja -v || exit 1
+    test_script:
+      - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1
 
 matrix:
   fast_finish: true

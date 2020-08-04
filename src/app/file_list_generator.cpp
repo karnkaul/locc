@@ -1,6 +1,8 @@
 #include <algorithm>
-#include <common.hpp>
-#include <file_list_generator.hpp>
+#include <app/config.hpp>
+#include <args_parser/args_parser.hpp>
+#include <ui/ui.hpp>
+#include "file_list_generator.hpp"
 
 namespace
 {
@@ -15,15 +17,13 @@ bool skip_file(stdfs::path const& path)
 	{
 		return true;
 	}
-	auto const ext_str = ext.generic_string();
-	if (std::any_of(cfg::g_skip_exts.begin(), cfg::g_skip_exts.end(), [ext_str](auto skip) -> bool { return skip == ext_str; }))
+	if (cfg::g_mode == cfg::mode::implt)
 	{
-		return true;
-	}
-	if (cfg::g_mode == cfg::mode::implt
-		&& std::none_of(cfg::g_ext_passlist.begin(), cfg::g_ext_passlist.end(), [ext_str](auto skip) -> bool { return skip == ext_str; }))
-	{
-		return true;
+		auto const ext_str = ext.generic_string();
+		if (std::none_of(cfg::g_ext_passlist.begin(), cfg::g_ext_passlist.end(), [ext_str](auto skip) -> bool { return skip == ext_str; }))
+		{
+			return true;
+		}
 	}
 	auto p = path;
 	while (!p.empty() && p.has_parent_path())
@@ -48,7 +48,7 @@ bool skip_file(stdfs::path const& path)
 }
 } // namespace
 
-std::deque<stdfs::path> locc::file_list(std::deque<locc::entry> const& entries)
+std::deque<stdfs::path> locc::file_list(parser::type_t const& entries)
 {
 	std::deque<stdfs::path> ret;
 	cfg::g_mode = cfg::mode::implt;
