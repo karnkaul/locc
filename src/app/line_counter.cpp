@@ -6,7 +6,8 @@
 #include <stdexcept>
 #include <thread>
 #include <async_queue/async_queue.hpp>
-#include <app/common.hpp>
+#include <app/config.hpp>
+#include <ui/ui.hpp>
 #include "line_counter.hpp"
 
 using async_queue = kt::async_queue<std::function<void()>>;

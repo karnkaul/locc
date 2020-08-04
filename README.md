@@ -86,14 +86,15 @@ $ ./locc -v -e=.md .
 
 `locc` supports a few command line parameters:
 
-- `--skip-substr=[substr0,substr1,...]`: Add path substring pattern to ignore
-- `[-e|--extensions]=[.ext0,.ext1,...]`: Additional extensions to count in implicit mode
-- `[-o|--one-thread]`: Run everything on the main thread
-- `[-b|--blanks]`: Include blank lines as lines of code
-- `[-q|--quiet]`: Print nothing but total lines of code
-- `[-v|--verbose]`: Lots of output
-- `[-d|--debug]`: Random debug output
-- `[-h|--help]`: Display help
+- `--skip-substr=<substr0>[,substr1,...]`: Add path substring pattern to ignore
+- `-e=` / `--extensions=<.ext0>[,.ext1,...]`: Additional extensions to count in implicit mode
+- `-o` / `--one-thread`: Run everything on the main thread
+- `-b` / `--blanks`: Include blank lines as lines of code
+- `-q` / `--quiet`: Print nothing but total lines of code
+- `-v` / `--verbose`: Lots of output
+- `-d` / `--debug`: Misc debug output
+- `-h` / `--help`: Print help
+- `--version`: Print version
 
 > _More switches and a data driven approach are in development._
 

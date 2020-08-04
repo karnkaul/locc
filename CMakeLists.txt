@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 
-project(locc)
+set(LOCC_VERSION "0.0.1.0" CACHE STRING "Application Version" FORCE)
+project(locc VERSION ${LOCC_VERSION})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -11,9 +12,14 @@ endif()
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.?pp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
+set(OUTFILE "${CMAKE_CURRENT_BINARY_DIR}/src/build_version.hpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/build_version.hpp.in" "${OUTFILE}")
+source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}" FILES "${OUTFILE}")
+
 add_executable(locc ${SOURCES})
 target_compile_features(locc PUBLIC cxx_std_17)
 target_include_directories(locc PRIVATE src)
+target_include_directories(locc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(locc PRIVATE pthread stdc++fs)

@@ -99,7 +99,7 @@ struct args_parser
 		auto search = std::find_if(entries.begin(), entries.end(), [key](auto const& entry) -> bool { return entry.k == key; });
 		if (search != entries.end())
 		{
-			return &search->second;
+			return &search->v;
 		}
 		return nullptr;
 	}

@@ -1,15 +1,10 @@
 #include <table_formatter/table_formatter.hpp>
-#include <app/common.hpp>
+#include <app/config.hpp>
+#include <build_version.hpp>
 #include "ui.hpp"
 
 namespace
 {
-template <typename T, typename... Ts>
-bool match_any(T const& lhs, Ts const&... rhs)
-{
-	return (... || (lhs == rhs));
-}
-
 template <typename F>
 void parse_values(locc::parser::value_view values, F f)
 {
@@ -67,11 +62,6 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 		cfg::set(cfg::flag::quiet);
 		return true;
 	}
-	else if (match_any(key, "h", "help"))
-	{
-		cfg::set(cfg::flag::help);
-		return true;
-	}
 	else if (match_any(key, "foo"))
 	{
 		return true;
@@ -81,16 +71,16 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 
 void locc::print_debug_prologue()
 {
-	locc::log("\n  -- flags:");
+	log("\n  -- flags:");
 	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i)
 	{
-		locc::log(cfg::test((cfg::flag)i), " ", cfg::g_flag_names.at(i));
+		log(cfg::test((cfg::flag)i), " ", cfg::g_flag_names.at(i));
 	}
 	if (cfg::g_flags.none())
 	{
-		locc::log(" [none]");
+		log(" [none]");
 	}
-	locc::log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode), "\n\n");
+	log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode), "\n\n");
 }
 
 void locc::print(locc::result const& result)
@@ -109,7 +99,7 @@ void locc::print(locc::result const& result)
 				tf.add_row(file.path.generic_string(), file.lines.code, file.lines.total, file.lines.comments);
 			}
 			tf.sort(sort_index, false);
-			locc::log("\n", tf.to_string(), "\n");
+			log("\n", tf.to_string(), "\n");
 			tf.clear();
 		}
 		if (!cfg::test(cfg::flag::quiet))
@@ -131,16 +121,21 @@ void locc::print(locc::result const& result)
 			}
 			tf.sort(sort_index, true);
 			tf.add_row("Total", total.counts.lines.code, total.counts.lines.total, total.counts.lines.comments, total.counts.files, total.ratio.code);
-			locc::log("\n", tf.to_string(), "\n");
+			log("\n", tf.to_string(), "\n");
 		}
 		else
 		{
-			locc::log_force(result.totals.code);
+			log_force(result.totals.code);
 		}
 	}
 }
 
 void locc::print_help()
 {
-	locc::log("\n == TODO (Help Summary) == \n\n");
+	log_force("\n == TODO (Help Summary) == \n\n");
+}
+
+void locc::print_version()
+{
+	log_force(g_version, "\n");
 }

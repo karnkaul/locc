@@ -1,6 +1,7 @@
 #include <algorithm>
-#include <app/common.hpp>
+#include <app/config.hpp>
 #include <args_parser/args_parser.hpp>
+#include <ui/ui.hpp>
 #include "file_list_generator.hpp"
 
 namespace
