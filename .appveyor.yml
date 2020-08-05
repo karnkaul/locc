@@ -2,36 +2,52 @@ version: "0.0.1-{build}"
 environment:
   global:
     LOCC_VERSION: "0.0.1"
-
-image:
-  - Visual Studio 2019
-  - Ubuntu2004
-
+  matrix:
+    - job_name: Windows x64
+      appveyor_build_worker_image: Visual Studio 2019
+    - job_name: Linux x64
+      appveyor_build_worker_image: Ubuntu2004
 configuration:
   - Release
-
+install:
+  - cmd: cmake -G "Visual Studio 16 2019" .
+  - sh: cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
 for:
   - matrix:
       only:
-        - image: Visual Studio 2019
-    install:
-      - cmd: cmake -G "Visual Studio 16 2019" .
+        - job_name: Windows x64
     build:
       project: locc.sln
       parallel: true
       verbosity: minimal
-    test_script:
-      - cmd: >-
-          .\Release\locc.exe -dbv . || exit 1
-          .\Release\locc.exe --version || exit 1
+    artifacts:
+      - path: Windows-x64.zip
   - matrix:
       only:
-        - image: Ubuntu2004
+        - job_name: Linux x64
     build_script:
-      - sh: cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
       - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && ninja -v || exit 1
-    test_script:
-      - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1
+    artifacts:
+      - path: Linux-x64.tar.gz
+test_script:
+  - cmd: >-
+      .\Release\locc.exe -dbv . || exit 1
+      .\Release\locc.exe --version || exit 1
+  - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1
+after_build:
+  - cmd: 7z a Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
+  - sh: tar -caf Linux-x64.tar.gz locc
+deploy:
+  - provider: GitHub
+    release: "locc-v0.0.1"
+    description: "Instigator: Appveyor CI script"
+    auth_token:
+      secure: Q4k4QeaxqXS7TIPI+dKfG8m2a8RTpP9G4sbpxhA9isKu3PgZywKwy5+ecPXyS7A5
+    artifact: Windows-x64.zip,Linux-x64.tar.gz
+    draft: true
+    prerelease: true
+    on:
+      APPVEYOR_REPO_TAG: true
 
 matrix:
   fast_finish: true
