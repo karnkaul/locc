@@ -1,7 +1,7 @@
-version: "0.0.1-{build}"
+version: "@LOCC_VERSION@-{build}"
 environment:
   global:
-    LOCC_VERSION: "0.0.1"
+    LOCC_VERSION: "@LOCC_VERSION@"
 
 image:
   - Visual Studio 2019

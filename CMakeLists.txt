@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 
-set(LOCC_VERSION "0.0.1.0" CACHE STRING "Application Version" FORCE)
+set(LOCC_VERSION "0.0.1" CACHE STRING "Application Version" FORCE)
 project(locc VERSION ${LOCC_VERSION})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -11,11 +11,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 find_package(Git QUIET)
-set(LOCC_GIT_COMMIT_HASH "[unknown]")
+set(LOCC_COMMIT_HASH "[unknown]")
 if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
 	execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-		OUTPUT_VARIABLE LOCC_GIT_COMMIT_HASH
+		OUTPUT_VARIABLE LOCC_COMMIT_HASH
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 	)
 	message(STATUS "Updating git submodules at ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -35,6 +35,8 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 set(OUTFILE "${CMAKE_CURRENT_BINARY_DIR}/src/build_version.hpp")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/build_version.hpp.in" "${OUTFILE}")
 source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}" FILES "${OUTFILE}")
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml.in" "${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml")
 
 add_executable(locc ${SOURCES})
 target_compile_features(locc PUBLIC cxx_std_17)

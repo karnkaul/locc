@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <iomanip>
-#include <sstream>
 #include <vector>
 #include "table_formatter.hpp"
 

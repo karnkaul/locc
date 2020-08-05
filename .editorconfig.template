@@ -9,3 +9,7 @@ end_of_line = lf
 [*.{py,md,yml,sh}]
 indent_style = space
 indent_size = 2
+
+[*.{py,md,yml,sh}.in]
+indent_style = space
+indent_size = 2
