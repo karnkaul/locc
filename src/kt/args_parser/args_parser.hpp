@@ -13,7 +13,7 @@ namespace kt
 /// \brief Container wrapper for parsing command line arguments
 ///
 /// Features:
-/// 	- Parse input in the form of `-x[=y] -foo[=bar] -abcd`
+/// 	- Parse input in the form of `-x[=y] --foo[=bar] -abcd`
 /// 	- Store results as key-value string pairs (value is empty unless `=` is present in the token)
 /// 	- Search for values among parsed keys (returns nullptr if not found)
 ///

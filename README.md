@@ -55,31 +55,32 @@ This repo (at some point in the past)
 ```
 $ ./locc -v -e=.md .
 
- | File                                      | LOC | Total | Comments |
- ----------------------------------------------------------------------
- | ./CMakeLists.txt                          |  25 |    30 |        0 |
- | ./README.md                               |  80 |   108 |        0 |
- | ./src/app/common.hpp                      | 249 |   294 |        0 |
- | ./src/app/file_list_generator.cpp         |  98 |   100 |        0 |
- | ./src/app/file_list_generator.hpp         |  10 |    13 |        0 |
- | ./src/app/line_counter.cpp                | 227 |   239 |        0 |
- | ./src/app/line_counter.hpp                |  10 |    13 |        0 |
- | ./src/args_parser/args_parser.hpp         | 101 |   109 |        0 |
- | ./src/async_queue/async_queue.hpp         |  89 |   100 |        0 |
- | ./src/main.cpp                            |  71 |    74 |        0 |
- | ./src/table_formatter/table_formatter.cpp |  95 |   103 |        0 |
- | ./src/table_formatter/table_formatter.hpp | 116 |   133 |        0 |
- | ./src/ui/ui.cpp                           | 141 |   147 |        0 |
- | ./src/ui/ui.hpp                           |  11 |    13 |        0 |
+ | File                                         | LOC | Total | Comments |
+ -------------------------------------------------------------------------
+ | ./CMakeLists.txt                             |  30 |    36 |        0 |
+ | ./README.md                                  |  82 |   110 |        0 |
+ | ./src/app/common.hpp                         | 102 |   119 |        0 |
+ | ./src/app/config.hpp                         |  65 |    74 |        0 |
+ | ./src/app/file_list_generator.cpp            |  99 |   101 |        0 |
+ | ./src/app/file_list_generator.hpp            |  10 |    13 |        0 |
+ | ./src/app/line_counter.cpp                   | 228 |   240 |        0 |
+ | ./src/app/line_counter.hpp                   |  10 |    13 |        0 |
+ | ./src/kt/args_parser.hpp                     | 112 |   147 |       27 |
+ | ./src/kt/async_queue.hpp                     | 100 |   159 |       47 |
+ | ./src/main.cpp                               |  96 |   100 |        0 |
+ | ./src/ui/table_formatter/table_formatter.cpp |  95 |   103 |        0 |
+ | ./src/ui/table_formatter/table_formatter.hpp | 116 |   133 |        0 |
+ | ./src/ui/ui.cpp                              | 136 |   142 |        0 |
+ | ./src/ui/ui.hpp                              |  99 |   121 |        0 |
 
 
  | Extension |  LOC | Total | Comments | Files | Ratio |
  -------------------------------------------------------
- | .cpp      |  632 |   663 |        0 |     5 | 0.478 |
- | .hpp      |  586 |   675 |        0 |     7 | 0.443 |
- | .md       |   80 |   108 |        0 |     1 | 0.060 |
- | .txt      |   25 |    30 |        0 |     1 | 0.019 |
- | Total     | 1323 |  1476 |        0 |    14 | 1.000 |
+ | .cpp      |  654 |   686 |        0 |     5 | 0.474 |
+ | .hpp      |  614 |   779 |       74 |     8 | 0.445 |
+ | .md       |   82 |   110 |        0 |     1 | 0.059 |
+ | .txt      |   30 |    36 |        0 |     1 | 0.022 |
+ | Total     | 1380 |  1611 |       74 |    15 | 1.000 |
 ```
 
 ### Options

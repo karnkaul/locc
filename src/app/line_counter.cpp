@@ -5,7 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include <thread>
-#include <async_queue/async_queue.hpp>
+#include <kt/async_queue/async_queue.hpp>
 #include <app/config.hpp>
 #include <ui/ui.hpp>
 #include "line_counter.hpp"
