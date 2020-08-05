@@ -20,10 +20,12 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 		if (help)
 		{
 			locc::print_help();
+			return false;
 		}
 		if (version)
 		{
 			locc::print_version();
+			return true;
 		}
 		if (help || version || locc::parse_options(key, value))
 		{
@@ -34,7 +36,11 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 			++iter;
 		}
 	}
-	return !out_entries.empty();
+	if (out_entries.empty())
+	{
+		out_entries.push_back({".", {}});
+	}
+	return true;
 }
 
 std::deque<stdfs::path> list_files(std::deque<locc::parser::entry> entries)
@@ -82,12 +88,17 @@ void run_loc(std::deque<stdfs::path> file_paths)
 int main(int argc, char** argv)
 {
 	locc::parser parser;
-	parser.parse(argc, argv);
-	if (parser.entries.size() < 2)
+	std::vector<std::string_view> args;
+	args.reserve((std::size_t)argc);
+	for (int i = 0; i < argc; ++i)
 	{
-		locc::print_help();
-		return 0;
+		args.push_back(argv[i]);
 	}
+	while (args.size() < 2)
+	{
+		args.push_back({".", {}});
+	}
+	parser.parse(args);
 	parser.entries.pop_front();
 	if (!parse_options(parser.entries))
 	{

@@ -10,6 +10,26 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	endif()
 endif()
 
+find_package(Git QUIET)
+set(LOCC_GIT_COMMIT_HASH "[unknown]")
+if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
+	execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		OUTPUT_VARIABLE LOCC_GIT_COMMIT_HASH
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+	message(STATUS "Updating git submodules at ${CMAKE_CURRENT_SOURCE_DIR}")
+	execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		RESULT_VARIABLE UPDATE_SUBMODULES_RESULT
+	)
+	if(NOT UPDATE_SUBMODULES_RESULT EQUAL "0")
+		message(FATAL_ERROR "git submodule update failed! ${UPDATE_SUBMODULES_RESULT}")
+	endif()
+else()
+	message(WARNING "Git / .git not found, submodules missing, expect compile errors!")
+endif()
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.?pp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 set(OUTFILE "${CMAKE_CURRENT_BINARY_DIR}/src/build_version.hpp")

@@ -57,17 +57,17 @@ $ ./locc -v -e=.md .
 
  | File                                         | LOC | Total | Comments |
  -------------------------------------------------------------------------
- | ./CMakeLists.txt                             |  30 |    36 |        0 |
- | ./README.md                                  |  82 |   110 |        0 |
+ | ./CMakeLists.txt                             |  49 |    56 |        0 |
+ | ./README.md                                  |  84 |   112 |        0 |
  | ./src/app/common.hpp                         | 102 |   119 |        0 |
  | ./src/app/config.hpp                         |  65 |    74 |        0 |
  | ./src/app/file_list_generator.cpp            |  99 |   101 |        0 |
  | ./src/app/file_list_generator.hpp            |  10 |    13 |        0 |
  | ./src/app/line_counter.cpp                   | 228 |   240 |        0 |
  | ./src/app/line_counter.hpp                   |  10 |    13 |        0 |
- | ./src/kt/args_parser.hpp                     | 112 |   147 |       27 |
- | ./src/kt/async_queue.hpp                     | 100 |   159 |       47 |
- | ./src/main.cpp                               |  96 |   100 |        0 |
+ | ./src/kt/args_parser/args_parser.hpp         | 112 |   150 |       29 |
+ | ./src/kt/async_queue/async_queue.hpp         | 100 |   162 |       49 |
+ | ./src/main.cpp                               | 101 |   105 |        0 |
  | ./src/ui/table_formatter/table_formatter.cpp |  95 |   103 |        0 |
  | ./src/ui/table_formatter/table_formatter.hpp | 116 |   133 |        0 |
  | ./src/ui/ui.cpp                              | 136 |   142 |        0 |
@@ -76,11 +76,12 @@ $ ./locc -v -e=.md .
 
  | Extension |  LOC | Total | Comments | Files | Ratio |
  -------------------------------------------------------
- | .cpp      |  654 |   686 |        0 |     5 | 0.474 |
- | .hpp      |  614 |   779 |       74 |     8 | 0.445 |
- | .md       |   82 |   110 |        0 |     1 | 0.059 |
- | .txt      |   30 |    36 |        0 |     1 | 0.022 |
- | Total     | 1380 |  1611 |       74 |    15 | 1.000 |
+ | .cpp      |  659 |   691 |        0 |     5 | 0.469 |
+ | .hpp      |  614 |   785 |       78 |     8 | 0.437 |
+ | .md       |   84 |   112 |        0 |     1 | 0.060 |
+ | .txt      |   49 |    56 |        0 |     1 | 0.035 |
+ | Total     | 1406 |  1644 |       78 |    15 | 1.000 |
+
 ```
 
 ### Options

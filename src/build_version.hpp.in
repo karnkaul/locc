@@ -4,6 +4,8 @@
 namespace locc
 {
 #define LOCC_VERSION "@LOCC_VERSION@"
+#define LOCC_GIT_COMMIT_HASH "@LOCC_GIT_COMMIT_HASH@"
 
 inline std::string_view const g_version = LOCC_VERSION;
+inline std::string_view const g_git_commit_hash = LOCC_GIT_COMMIT_HASH;
 } // namespace locc

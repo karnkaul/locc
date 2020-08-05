@@ -137,5 +137,5 @@ void locc::print_help()
 
 void locc::print_version()
 {
-	log_force(g_version, "\n");
+	log_force(g_version, "-", g_git_commit_hash, "\n");
 }
