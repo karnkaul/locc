@@ -21,29 +21,30 @@ for:
       parallel: true
       verbosity: minimal
     artifacts:
-      - path: Windows-x64.zip
+      - path: locc-v@LOCC_VERSION@-Windows-x64.zip
   - matrix:
       only:
         - job_name: Linux x64
     build_script:
       - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && ninja -v || exit 1
     artifacts:
-      - path: Linux-x64.tar.gz
+      - path: locc-v@LOCC_VERSION@-Linux-x64.tar.gz
 test_script:
   - cmd: >-
       .\Release\locc.exe -dbv . || exit 1
       .\Release\locc.exe --version || exit 1
   - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1
 after_build:
-  - cmd: 7z a Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
-  - sh: tar -caf Linux-x64.tar.gz locc
+  - cmd: 7z a locc-v@LOCC_VERSION@-Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
+  - sh: tar -caf locc-v@LOCC_VERSION@-Linux-x64.tar.gz locc
 deploy:
   - provider: GitHub
+    tag: "v@LOCC_VERSION@"
     release: "locc-v@LOCC_VERSION@"
     description: "Instigator: Appveyor CI script"
     auth_token:
       secure: Q4k4QeaxqXS7TIPI+dKfG8m2a8RTpP9G4sbpxhA9isKu3PgZywKwy5+ecPXyS7A5
-    artifact: Windows-x64.zip,Linux-x64.tar.gz
+    artifact: locc-v@LOCC_VERSION@-Windows-x64.zip,locc-v@LOCC_VERSION@-Linux-x64.tar.gz
     draft: true
     prerelease: true
     on:
