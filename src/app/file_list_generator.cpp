@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <optional>
 #include <app/config.hpp>
 #include <kt/args_parser/args_parser.hpp>
 #include <ui/ui.hpp>
@@ -6,23 +7,27 @@
 
 namespace
 {
-bool skip_file(stdfs::path const& path)
+std::optional<locc::file> include_file(stdfs::path const& path)
 {
-	if (!stdfs::is_regular_file(path))
+	if (!stdfs::is_regular_file(stdfs::absolute(path)))
 	{
-		return true;
+		return {};
 	}
-	auto const ext = path.extension();
+	auto const filename = path.filename().generic_string();
+	if (cfg::g_filename_as_ext.find(filename) != cfg::g_filename_as_ext.end())
+	{
+		return locc::file{path, filename, cfg::get_id(filename), {}};
+	}
+	auto const ext = path.extension().generic_string();
 	if (ext.empty())
 	{
-		return true;
+		return {};
 	}
 	if (cfg::g_mode == cfg::mode::implt)
 	{
-		auto const ext_str = ext.generic_string();
-		if (std::none_of(cfg::g_ext_passlist.begin(), cfg::g_ext_passlist.end(), [ext_str](auto skip) -> bool { return skip == ext_str; }))
+		if (std::none_of(cfg::g_ext_passlist.begin(), cfg::g_ext_passlist.end(), [&ext](auto skip) -> bool { return skip == ext; }))
 		{
-			return true;
+			return {};
 		}
 	}
 	auto p = path;
@@ -32,25 +37,25 @@ bool skip_file(stdfs::path const& path)
 		auto const path = p.generic_string();
 		if (name.size() > 1 && name.at(0) == '.' && name.at(1) != '.')
 		{
-			return true;
+			return {};
 		}
 		if (std::any_of(cfg::g_skip_substrs.begin(), cfg::g_skip_substrs.end(), [path](auto skip) -> bool { return path.find(skip) != locc::null_index; }))
 		{
-			return true;
+			return {};
 		}
 		p = p.parent_path();
 	}
 	if (path.generic_string().find(".git") != std::string::npos)
 	{
-		return true;
+		return {};
 	}
-	return false;
+	return locc::file{path, ext, cfg::get_id(ext), {}};
 }
 } // namespace
 
-std::deque<stdfs::path> locc::file_list(parser::type_t const& entries)
+std::deque<locc::file> locc::file_list(parser::type_t const& entries)
 {
-	std::deque<stdfs::path> ret;
+	std::deque<file> ret;
 	cfg::g_mode = cfg::mode::implt;
 	for (auto& [key, value] : entries)
 	{
@@ -68,20 +73,20 @@ std::deque<stdfs::path> locc::file_list(parser::type_t const& entries)
 				{
 					try
 					{
-						if (!iter->is_symlink())
+						if (cfg::test(cfg::flag::follow_symlinks) || !iter->is_symlink())
 						{
 							auto path = iter->path();
-							if (!skip_file(path))
+							auto file = include_file(path);
+							if (file)
 							{
 								locc::log(cfg::test(cfg::flag::debug) && cfg::test(cfg::flag::verbose), "  -- tracking ", path.generic_string(), "\n");
-								ret.push_back(std::move(path));
+								ret.push_back(std::move(*file));
 							}
 						}
 					}
 					catch (std::exception const& e)
 					{
-						locc::err("Exception caught: ", e.what(), "\n");
-						continue;
+						locc::err(cfg::test(cfg::flag::debug), e.what(), "\n");
 					}
 				}
 				return ret;
@@ -92,7 +97,9 @@ std::deque<stdfs::path> locc::file_list(parser::type_t const& entries)
 		{
 			if (stdfs::is_regular_file(stdfs::absolute(key)))
 			{
-				ret.push_back(std::move(key));
+				auto path = stdfs::path(key);
+				auto const filename = path.filename().generic_string();
+				ret.push_back(file{std::move(path), filename, cfg::get_id(filename), {}});
 			}
 		}
 	}

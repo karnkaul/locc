@@ -10,15 +10,18 @@ void parse_values(locc::parser::value_view values, F f)
 {
 	while (!values.empty())
 	{
-		std::size_t const comma = values.find(",");
-		if (comma != locc::null_index)
+		std::size_t const comma = values.find(',');
+		if (comma > 0 && comma != locc::null_index)
 		{
 			f(values.substr(0, comma));
 			values = values.substr(comma + 1);
 		}
 		else
 		{
-			f(values);
+			if (!values.empty())
+			{
+				f(values);
+			}
 			values = {};
 		}
 	}
@@ -34,7 +37,12 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 	}
 	else if (match_any(key, "e", "extensions"))
 	{
-		parse_values(value, [](auto v) { cfg::g_ext_passlist.insert(std::string(v)); });
+		parse_values(value, [](auto v) {
+			if (v.at(0) == '.')
+			{
+				cfg::g_ext_passlist.insert(std::string(v));
+			}
+		});
 		return true;
 	}
 	else if (match_any(key, "b", "blanks"))
@@ -60,6 +68,11 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 	else if (match_any(key, "q", "quiet"))
 	{
 		cfg::set(cfg::flag::quiet);
+		return true;
+	}
+	else if (match_any(key, "s", "symlinks"))
+	{
+		cfg::set(cfg::flag::follow_symlinks);
 		return true;
 	}
 	else if (match_any(key, "foo"))
@@ -105,16 +118,16 @@ void locc::print(locc::result const& result)
 		if (!cfg::test(cfg::flag::quiet))
 		{
 			auto dist = result.transform_dist();
-			tf.add_column("Extension", true);
+			tf.add_column("File", true);
 			tf.add_column("LOC");
 			tf.add_column("Total");
 			tf.add_column("Comments");
 			tf.add_column("Files");
 			auto sort_index = tf.add_column("Ratio");
-			locc::result::ext_data total;
-			for (auto const& [ext, data] : dist)
+			locc::result::file_stats total;
+			for (auto const& [id, data] : dist)
 			{
-				tf.add_row(ext, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.counts.files, data.ratio.code);
+				tf.add_row(id, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.counts.files, data.ratio.code);
 				total.counts.lines.add(data.counts.lines);
 				total.counts.files += data.counts.files;
 				total.ratio.add(data.ratio);

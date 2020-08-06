@@ -25,29 +25,29 @@ Linux kernel (20 million LOC)
 ```
 $ time ./locc linux-master
 
- | Extension |      LOC |    Total | Comments | Files | Ratio |
- --------------------------------------------------------------
- | .c        | 15994571 | 19768868 |    35390 | 28751 | 0.755 |
- | .h        |  4899262 |  6066731 |   139553 | 21033 | 0.231 |
- | .txt      |   194380 |   240694 |     4561 |  3220 | 0.009 |
- | .sh       |    55046 |    78839 |    10064 |   495 | 0.003 |
- | .py       |    25662 |    32936 |     2716 |   106 | 0.001 |
- | .cc       |     1681 |     1972 |       17 |     1 | 0.000 |
- | .cpp      |      251 |      314 |        2 |     3 | 0.000 |
- | .css      |      105 |      138 |        0 |     1 | 0.000 |
- | .inl      |       99 |      127 |        0 |     2 | 0.000 |
- | Total     | 21171057 | 26190619 |   192303 | 53612 | 1.000 |
+ | File         |      LOC |    Total | Comments | Files | Ratio |
+ -----------------------------------------------------------------
+ | C            | 16088983 | 19879024 |    35616 | 28969 | 0.754 |
+ | C header     |  4909329 |  6079780 |   139577 | 21112 | 0.230 |
+ | Plain text   |   196016 |   242803 |     4587 |  3230 | 0.009 |
+ | Makefile     |    57108 |    66883 |        0 |  2581 | 0.003 |
+ | Shell script |    57795 |    82865 |    10413 |   517 | 0.003 |
+ | Python       |    26771 |    34364 |     2778 |   113 | 0.001 |
+ | C++          |     1993 |     2360 |       23 |     8 | 0.000 |
+ | C++ header   |       99 |      127 |        0 |     2 | 0.000 |
+ | CSS          |      105 |      138 |        0 |     1 | 0.000 |
+ | Total        | 21338199 | 26388344 |   192994 | 56533 | 1.000 |
 
 
-real    0m0.699s
-user    0m3.462s
-sys     0m0.558s
+real    0m0.956s
+user    0m3.884s
+sys     0m0.660s
 
 $ time ./locc -q linux-master
-21171057
-real    0m0.690s
-user    0m3.431s
-sys     0m0.583s
+21336187
+real    0m0.936s
+user    0m3.640s
+sys     0m0.702s
 ```
 
 This repo (at some point in the past)
@@ -82,6 +82,20 @@ $ ./locc -v -e=.md .
  | .txt      |   49 |    56 |        0 |     1 | 0.035 |
  | Total     | 1406 |  1644 |       78 |    15 | 1.000 |
 
+```
+
+### Performance
+
+`locc` is incredibly lightweight when compared to `loc` / `scc` / etc (orders of magnitude smaller), and generally runs faster than them as well, albeit with the least amount of stats / customisation.
+
+Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
+
+```
+ | Program |    Size |     Execution Time     |
+ ----------------------------------------------
+ | loc     | 4786KiB | 1001.67ms (+/-73.65ms) |
+ | scc     | 4561KiB | 1346.00ms (+/-43.59ms) |
+ | locc    |  298KiB |  960.00ms (+/-14.42ms) |
 ```
 
 ### Options

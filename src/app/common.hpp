@@ -74,12 +74,14 @@ using ratio = lines_t<float>;
 struct file final
 {
 	stdfs::path path;
+	std::string ext;
+	std::string id;
 	lines_blank lines;
 };
 
 struct result final
 {
-	struct ext_data
+	struct file_stats
 	{
 		struct
 		{
@@ -88,7 +90,7 @@ struct result final
 		} counts;
 		ratio ratio;
 	};
-	using distribution = std::unordered_map<std::string, ext_data>;
+	using distribution = std::unordered_map<std::string, file_stats>;
 
 	distribution dist;
 	std::deque<file> files;
@@ -97,7 +99,7 @@ struct result final
 	template <template <typename...> typename Cont = std::map, typename Pred, typename... Args>
 	auto transform_dist(Pred predicate) const
 	{
-		Cont<std::string, ext_data, Args...> ret;
+		Cont<std::string, file_stats, Args...> ret;
 		for (auto const& [ext, data] : dist)
 		{
 			if (predicate(ext, data))

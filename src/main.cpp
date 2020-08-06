@@ -15,19 +15,17 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 	for (auto iter = out_entries.begin(); iter != out_entries.end();)
 	{
 		auto& [key, value] = *iter;
-		bool const help = locc::match_any(key, "h", "help");
-		bool const version = !help && locc::match_any(key, "version");
-		if (help)
+		if (locc::match_any(key, "h", "help"))
 		{
 			locc::print_help();
 			return false;
 		}
-		if (version)
+		else if (locc::match_any(key, "version"))
 		{
 			locc::print_version();
-			return true;
+			return false;
 		}
-		if (help || version || locc::parse_options(key, value))
+		if (locc::parse_options(key, value))
 		{
 			iter = out_entries.erase(iter);
 		}
@@ -43,7 +41,7 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 	return true;
 }
 
-std::deque<stdfs::path> list_files(std::deque<locc::parser::entry> entries)
+std::deque<locc::file> list_files(std::deque<locc::parser::entry> entries)
 {
 	for (auto& [ext, _] : cfg::g_ext_groups)
 	{
@@ -71,7 +69,7 @@ std::deque<stdfs::path> list_files(std::deque<locc::parser::entry> entries)
 	return {};
 }
 
-void run_loc(std::deque<stdfs::path> file_paths)
+void run_loc(std::deque<locc::file> files)
 {
 	for (auto const& [ext, group] : cfg::g_ext_groups)
 	{
@@ -80,7 +78,7 @@ void run_loc(std::deque<stdfs::path> file_paths)
 			cfg::g_ext_config[ext] = search->second;
 		}
 	}
-	auto result = locc::process(std::move(file_paths));
+	auto result = locc::process(std::move(files));
 	locc::print(result);
 }
 } // namespace

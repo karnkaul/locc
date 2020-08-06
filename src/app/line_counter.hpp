@@ -1,12 +1,10 @@
 #pragma once
 #include <deque>
-#include <filesystem>
-
-namespace stdfs = std::filesystem;
+#include <app/common.hpp>
 
 namespace locc
 {
 struct result;
 
-result process(std::deque<stdfs::path> file_paths);
+result process(std::deque<locc::file> files);
 } // namespace locc

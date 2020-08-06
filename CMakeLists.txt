@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 
-set(LOCC_VERSION "0.0.1" CACHE STRING "Application Version" FORCE)
+set(LOCC_VERSION "0.0.2" CACHE STRING "Application Version" FORCE)
 project(locc VERSION ${LOCC_VERSION})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -46,6 +46,7 @@ target_include_directories(locc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src")
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(locc PRIVATE pthread stdc++fs)
 	target_compile_options(locc PRIVATE -fPIC)
+	target_link_options(locc PRIVATE -no-pie)
 endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(locc PRIVATE /MP)
