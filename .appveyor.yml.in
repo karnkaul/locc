@@ -1,7 +1,7 @@
-version: "0.0.1-{build}"
+version: "@LOCC_VERSION@-{build}"
 environment:
   global:
-    LOCC_VERSION: "0.0.1"
+    LOCC_VERSION: "@LOCC_VERSION@"
   matrix:
     - job_name: Windows x64
       appveyor_build_worker_image: Visual Studio 2019
@@ -39,7 +39,7 @@ after_build:
   - sh: tar -caf Linux-x64.tar.gz locc
 deploy:
   - provider: GitHub
-    release: "locc-v0.0.1"
+    release: "locc-v@LOCC_VERSION@"
     description: "Instigator: Appveyor CI script"
     auth_token:
       secure: Q4k4QeaxqXS7TIPI+dKfG8m2a8RTpP9G4sbpxhA9isKu3PgZywKwy5+ecPXyS7A5
