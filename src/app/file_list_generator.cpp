@@ -13,10 +13,14 @@ std::optional<locc::file> include_file(stdfs::path const& path)
 	{
 		return {};
 	}
-	auto const filename = path.filename().generic_string();
-	if (cfg::g_filename_as_ext.find(filename) != cfg::g_filename_as_ext.end())
+	if (path.generic_string().find(".git/") != std::string::npos)
 	{
-		return locc::file{path, filename, cfg::get_id(filename), {}};
+		return {};
+	}
+	auto const filename = path.filename().generic_string();
+	if (cfg::g_settings.filename_as_ext.find(filename) != cfg::g_settings.filename_as_ext.end())
+	{
+		return locc::file{path, filename, cfg::g_settings.get_id(filename), {}};
 	}
 	auto const ext = path.extension().generic_string();
 	if (ext.empty())
@@ -25,7 +29,7 @@ std::optional<locc::file> include_file(stdfs::path const& path)
 	}
 	if (cfg::g_mode == cfg::mode::implt)
 	{
-		if (std::none_of(cfg::g_ext_passlist.begin(), cfg::g_ext_passlist.end(), [&ext](auto skip) -> bool { return skip == ext; }))
+		if (std::none_of(cfg::g_settings.ext_passlist.begin(), cfg::g_settings.ext_passlist.end(), [&ext](auto skip) -> bool { return skip == ext; }))
 		{
 			return {};
 		}
@@ -35,21 +39,14 @@ std::optional<locc::file> include_file(stdfs::path const& path)
 	{
 		auto const name = p.filename().generic_string();
 		auto const path = p.generic_string();
-		if (name.size() > 1 && name.at(0) == '.' && name.at(1) != '.')
-		{
-			return {};
-		}
-		if (std::any_of(cfg::g_skip_substrs.begin(), cfg::g_skip_substrs.end(), [path](auto skip) -> bool { return path.find(skip) != locc::null_index; }))
+		if (std::any_of(cfg::g_settings.skip_substrs.begin(), cfg::g_settings.skip_substrs.end(),
+						[path](auto skip) -> bool { return path.find(skip) != locc::null_index; }))
 		{
 			return {};
 		}
 		p = p.parent_path();
 	}
-	if (path.generic_string().find(".git") != std::string::npos)
-	{
-		return {};
-	}
-	return locc::file{path, ext, cfg::get_id(ext), {}};
+	return locc::file{path, ext, cfg::g_settings.get_id(ext), {}};
 }
 } // namespace
 
@@ -99,7 +96,7 @@ std::deque<locc::file> locc::file_list(parser::type_t const& entries)
 			{
 				auto path = stdfs::path(key);
 				auto const filename = path.filename().generic_string();
-				ret.push_back(file{std::move(path), filename, cfg::get_id(filename), {}});
+				ret.push_back(file{std::move(path), filename, cfg::g_settings.get_id(filename), {}});
 			}
 		}
 	}

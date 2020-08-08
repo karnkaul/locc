@@ -25,29 +25,28 @@ Linux kernel (20 million LOC)
 ```
 $ time ./locc linux-master
 
- | File         |      LOC |    Total | Comments | Files | Ratio |
- -----------------------------------------------------------------
- | C            | 16088983 | 19879024 |    35616 | 28969 | 0.754 |
- | C header     |  4909329 |  6079780 |   139577 | 21112 | 0.230 |
- | Plain text   |   196016 |   242803 |     4587 |  3230 | 0.009 |
- | Makefile     |    57108 |    66883 |        0 |  2581 | 0.003 |
- | Shell script |    57795 |    82865 |    10413 |   517 | 0.003 |
- | Python       |    26771 |    34364 |     2778 |   113 | 0.001 |
- | C++          |     1993 |     2360 |       23 |     8 | 0.000 |
- | C++ header   |       99 |      127 |        0 |     2 | 0.000 |
- | CSS          |      105 |      138 |        0 |     1 | 0.000 |
- | Total        | 21338199 | 26388344 |   192994 | 56533 | 1.000 |
+ | File          |     Code |    Total | Comments | Files | Ratio |
+ ------------------------------------------------------------------
+ | C             | 16091231 | 19881903 |    35621 | 28974 | 0.748 |
+ | C header      |  4908390 |  6078608 |   139577 | 21121 | 0.228 |
+ | Plain text    |   200603 |   242803 |        0 |  3230 | 0.009 |
+ | JSON          |   175200 |   175200 |        0 |   328 | 0.008 |
+ | Shell script  |    57795 |    82865 |    10413 |   517 | 0.003 |
+ | Makefile      |    57124 |    66901 |        0 |  2583 | 0.003 |
+ | Python        |    26771 |    34364 |     2778 |   113 | 0.001 |
+ | C++           |     1993 |     2360 |       23 |     8 | 0.000 |
+ | gitignore     |     1693 |     1716 |        0 |   254 | 0.000 |
+ | CSV           |      209 |      210 |        0 |     6 | 0.000 |
+ | CSS           |      105 |      138 |        0 |     1 | 0.000 |
+ | C++ header    |       99 |      127 |        0 |     2 | 0.000 |
+ | INI           |        7 |        8 |        0 |     1 | 0.000 |
+ | gitattributes |        7 |        7 |        0 |     2 | 0.000 |
+ | Total         | 21521227 | 26567210 |   188412 | 57140 | 1.000 |
 
 
-real    0m0.956s
-user    0m3.884s
-sys     0m0.660s
-
-$ time ./locc -q linux-master
-21336187
-real    0m0.936s
-user    0m3.640s
-sys     0m0.702s
+real    0m0.847s
+user    0m3.698s
+sys     0m0.545s
 ```
 
 This repo (at some point in the past)
@@ -93,9 +92,9 @@ Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
 ```
  | Program |    Size |     Execution Time     |
  ----------------------------------------------
- | loc     | 4786KiB | 1001.67ms (+/-73.65ms) |
- | scc     | 4561KiB | 1346.00ms (+/-43.59ms) |
- | locc    |  298KiB |  960.00ms (+/-14.42ms) |
+ | loc     | 4786KiB |  758.000ms (+/-19.7ms) |
+ | scc     | 4561KiB | 1135.667ms (+/-6.7ms)  |
+ | locc    |  298KiB |  830.667ms (+/-4.7ms)  |
 ```
 
 ### Options
@@ -104,6 +103,7 @@ Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
 
 - `--skip-substr=<substr0>[,substr1,...]`: Add path substring pattern to ignore
 - `-e=` / `--extensions=<.ext0>[,.ext1,...]`: Additional extensions to count in implicit mode
+- `--sort-by=<column_name>`: Sort results by column (lowercase, `code` by default)
 - `-o` / `--one-thread`: Run everything on the main thread
 - `-b` / `--blanks`: Include blank lines as lines of code
 - `-q` / `--quiet`: Print nothing but total lines of code

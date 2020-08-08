@@ -43,16 +43,30 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 
 std::deque<locc::file> list_files(std::deque<locc::parser::entry> entries)
 {
-	for (auto& [ext, _] : cfg::g_ext_groups)
+	for (auto const& [_, exts] : cfg::g_settings.ext_groups)
 	{
-		cfg::g_ext_passlist.insert(ext);
+		for (auto const& ext : exts)
+		{
+			cfg::g_settings.ext_passlist.insert(ext);
+		}
 	}
-	for (auto& [ext, _] : cfg::g_ext_config)
+	for (auto const& [ext, _] : cfg::g_settings.ext_comment_info)
 	{
 		if (ext.at(0) == '.')
 		{
-			cfg::g_ext_passlist.insert(ext);
+			cfg::g_settings.ext_passlist.insert(ext);
 		}
+	}
+	for (auto const& [id, exts] : cfg::g_settings.id_groups)
+	{
+		for (auto const& ext : exts)
+		{
+			cfg::g_settings.ext_to_id[ext] = id;
+		}
+	}
+	for (auto const& [ext, _] : cfg::g_settings.ext_to_id)
+	{
+		cfg::g_settings.ext_passlist.insert(ext);
 	}
 	for (auto iter = entries.begin(); iter != entries.end();)
 	{
@@ -71,11 +85,14 @@ std::deque<locc::file> list_files(std::deque<locc::parser::entry> entries)
 
 void run_loc(std::deque<locc::file> files)
 {
-	for (auto const& [ext, group] : cfg::g_ext_groups)
+	for (auto const& [group, exts] : cfg::g_settings.ext_groups)
 	{
-		if (auto search = cfg::g_ext_config.find(group); search != cfg::g_ext_config.end())
+		if (auto search = cfg::g_settings.ext_comment_info.find(group); search != cfg::g_settings.ext_comment_info.end())
 		{
-			cfg::g_ext_config[ext] = search->second;
+			for (auto const& ext : exts)
+			{
+				cfg::g_settings.ext_comment_info[ext] = search->second;
+			}
 		}
 	}
 	auto result = locc::process(std::move(files));

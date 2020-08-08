@@ -24,78 +24,112 @@ enum class mode
 	implt,
 };
 
+enum class col
+{
+	file,
+	code,
+	total,
+	comments,
+	files,
+	ratio,
+	count_
+};
+
+struct column final
+{
+	std::string_view name;
+	bool reverse = false;
+
+	inline std::string ui_name() const
+	{
+		std::string ret(name);
+		if (!ret.empty())
+		{
+			ret.at(0) = std::toupper(ret.at(0));
+		}
+		return ret;
+	}
+};
+
 inline std::bitset<(std::size_t)flag::count_> g_flags;
 inline mode g_mode = mode::explt;
+inline col g_sort_by = col::code;
 inline constexpr std::array g_flag_names = {"blanks", "one_thread", "verbose", "debug", "quiet", "follow_symlinks"};
 inline constexpr std::array g_mode_names = {"explicit", "implicit"};
+inline std::array<column, (std::size_t)col::count_> g_columns = {
+	{{"file", true}, {"code", false}, {"total", false}, {"comments", false}, {"files", false}, {"ratio", false}}};
 
-inline std::unordered_set<locc::comment_line> g_comment_lines;
-
-inline std::unordered_set<locc::ext> g_ext_passlist;
-inline std::unordered_set<std::string> g_skip_substrs = {"CMakeFiles"};
-inline std::unordered_set<std::string> g_filename_as_ext = {"Makefile", "CMakeLists.txt"};
-
-inline std::unordered_map<locc::ext, locc::ext_group> g_ext_groups = {
-	{".c", "c-style"},	 {".cc", "c-style"},	{".cpp", "c-style"},   {".h", "c-style"},	   {".hpp", "c-style"},
-	{".inl", "c-style"}, {".tpp", "c-style"},	{".java", "c-style"},  {".cs", "c-style"},	   {".js", "c-style"},
-	{".css", "c-style"}, {".sh", "bash-style"}, {".py", "bash-style"}, {".txt", "bash-style"}, {".cmake", "bash-style"}};
-inline locc::ext_config g_ext_config = {
-	{"c-style", {{"//"}, {{"/*", "*/"}}}},
-	{"bash-style", {{"#"}, {}}},
-};
-inline std::unordered_map<locc::ext, std::string> g_ext_to_id = {
-	{".c", "C"},
-	{".cc", "C++"},
-	{".cpp", "C++"},
-	{".h", "C header"},
-	{".hpp", "C++ header"},
-	{".inl", "C++ header"},
-	{".tpp", "C++ header"},
-	{".java", "Java"},
-	{".cs", "C#"},
-	{"CMakeLists.txt", "CMake script"},
-	{".cmake", "CMake script"},
-	{".sh", "Shell script"},
-	{".py", "Python"},
-	{".js", "JavaScript"},
-	{".txt", "Plain text"},
-	{".css", "CSS"},
-};
-
-inline locc::config const& find_config(locc::ext const& extension)
+struct settings final
 {
-	auto iter = g_ext_config.end();
-	if (auto group = g_ext_groups.find(extension); group != g_ext_groups.end())
-	{
-		iter = g_ext_config.find(group->second);
-	}
-	else
-	{
-		iter = g_ext_config.find(extension);
-	}
-	if (iter != g_ext_config.end())
-	{
-		return iter->second;
-	}
-	static locc::config const default_ret;
-	return default_ret;
-}
+	std::unordered_set<locc::ext> ext_passlist;
+	std::unordered_map<locc::ext, locc::id> ext_to_id;
+	std::unordered_set<std::string> skip_substrs = {"CMakeFiles", ".vscode", ".vs", ".xcode"};
+	std::unordered_set<std::string> filename_as_ext = {"Makefile", "CMakeLists.txt", ".gitignore", ".gitattributes", ".gitmodules"};
+	// clang-format off
+	std::unordered_map<locc::ext_group, std::deque<locc::ext>> ext_groups = {
+		{"c-style", {".c", ".cc", ".cpp", ".h", ".hpp", ".inl", ".tpp", ".java", ".cs", ".js", ".css"}},
+		{"bash-style", {".sh", ".py", "CMakeLists.txt"}},
+		{"xml-style", {".html", ".xml"}}
+	};
+	std::unordered_map<locc::ext, locc::comment_info> ext_comment_info = {
+		{"c-style", {{"//"}, {{"/*", "*/"}}}},
+		{"bash-style", {{"#"}, {}}},
+		{"xml-style", {{}, {{"<!--", "-->"}}}},
+	};
+	std::unordered_map<locc::id, std::deque<locc::ext>> id_groups = {
+		{"C", {".c"}},
+		{"C++", {".cc", ".cpp"}},
+		{"C header", {".h"}},
+		{"C++ header", {".hpp", ".inl", ".tpp"}},
+		{"Java", {".java"}},
+		{"C#", {".cs"}},
+		{"CMake script", {"CMakeLists.txt", ".cmake"}},
+		{"Shell script", {".sh"}},
+		{"Python", {".py"}},
+		{"JavaScript", {".js"}},
+		{"TypeScript", {".ts"}},
+		{"Plain Text", {".txt"}},
+		{"CSS", {".css"}},
+		{"JSON", {".json"}},
+		{"YAML", {".yml"}},
+		{"gitignore", {".gitignore"}},
+		{"gitattributes", {".gitattributes"}},
+		{"CSV", {".csv"}},
+		{"INI", {".ini"}},
+		{"HTML", {".htm", ".html"}},
+		{"XML", {".xml"}},
+		{"Markdown", {".md"}},
+	};
+	// clang-format on
 
-inline std::string get_id(std::string const& query)
-{
-	if (!query.empty())
+	inline locc::comment_info const& find_comment_info(locc::ext const& extension) const
 	{
-		if (auto search = g_ext_to_id.find(query); search != g_ext_to_id.end())
+		if (auto iter = ext_comment_info.find(extension); iter != ext_comment_info.end())
 		{
-			return search->second;
+			return iter->second;
 		}
-		if (query.at(0) == '.')
-		{
-			return "*" + query;
-		}
+		static locc::comment_info const default_ret;
+		return default_ret;
 	}
-	return query;
-}
+
+	inline locc::id get_id(std::string const& query) const
+	{
+		if (!query.empty())
+		{
+			if (auto search = ext_to_id.find(query); search != ext_to_id.end())
+			{
+				return search->second;
+			}
+			if (query.at(0) == '.')
+			{
+				return "*" + query;
+			}
+		}
+		return query;
+	}
+};
+
+inline settings g_settings;
 
 inline void set(cfg::flag flag)
 {

@@ -5,13 +5,20 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 namespace kt
 {
 class table_formatter final
 {
 public:
-	using row = std::deque<std::string>;
+	struct cell final
+	{
+		std::string text;
+		std::variant<uint64_t, int64_t, double, bool> number;
+	};
+
+	using row = std::deque<cell>;
 	using fill = std::pair<char, uint16_t>;
 
 	struct info final
@@ -97,11 +104,20 @@ void table_formatter::add_cell(T&& arg)
 	auto& cell = row.at(m_data.write_head++);
 	if constexpr (std::is_integral_v<std::decay_t<T>>)
 	{
-		cell = std::to_string(arg);
+		cell.text = std::to_string(arg);
+		if constexpr (std::is_unsigned_v<std::decay_t<T>>)
+		{
+			cell.number = (uint64_t)arg;
+		}
+		else
+		{
+			cell.number = (int64_t)arg;
+		}
 	}
 	else if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
 	{
-		cell = std::forward<T>(arg);
+		cell.text = std::forward<T>(arg);
+		cell.number = false;
 	}
 	else
 	{
@@ -110,14 +126,16 @@ void table_formatter::add_cell(T&& arg)
 		if constexpr (std::is_floating_point_v<std::decay_t<T>>)
 		{
 			str << std::fixed << arg;
+			cell.number = (double)arg;
 		}
 		else
 		{
 			str << arg;
+			cell.number = false;
 		}
-		cell = str.str();
+		cell.text = str.str();
 	}
-	col.width = std::max((uint8_t)cell.size(), col.width);
+	col.width = std::max((uint8_t)cell.text.size(), col.width);
 }
 
 template <typename Arg, typename... Args>

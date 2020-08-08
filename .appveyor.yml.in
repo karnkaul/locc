@@ -6,7 +6,7 @@ environment:
     - job_name: Windows x64
       appveyor_build_worker_image: Visual Studio 2019
     - job_name: Linux x64
-      appveyor_build_worker_image: Ubuntu2004
+      appveyor_build_worker_image: Ubuntu
 configuration:
   - Release
 install:
@@ -30,7 +30,7 @@ for:
     artifacts:
       - path: locc-v@LOCC_VERSION@-Linux-x64.tar.gz
 test_script:
-  - cmd: >-
+  - cmd: |
       .\Release\locc.exe -dbv . || exit 1
       .\Release\locc.exe --version || exit 1
   - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1

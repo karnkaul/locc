@@ -13,15 +13,13 @@ namespace locc
 template <typename T>
 using pair_t = std::pair<T, T>;
 
-using comment_line = std::string;
-using comment_block = pair_t<std::string>;
+using path = stdfs::path;
 using ext = std::string;
 using ext_group = std::string;
+using id = std::string;
 
-using comment_line_view = std::string_view;
-using comment_block_view = pair_t<std::string_view>;
-using ext_view = std::string_view;
-using ext_group_view = std::string_view;
+using comment_line = std::string;
+using comment_block = pair_t<std::string>;
 
 template <typename T, typename... Ts>
 bool match_any(T const& lhs, Ts const&... rhs)
@@ -29,12 +27,11 @@ bool match_any(T const& lhs, Ts const&... rhs)
 	return (... || (lhs == rhs));
 }
 
-struct config final
+struct comment_info final
 {
 	std::deque<comment_line> comment_lines;
 	std::deque<comment_block> comment_blocks;
 };
-using ext_config = std::unordered_map<ext, config>;
 
 constexpr std::size_t null_index = std::string::npos;
 
@@ -73,9 +70,9 @@ using ratio = lines_t<float>;
 
 struct file final
 {
-	stdfs::path path;
-	std::string ext;
-	std::string id;
+	path path;
+	ext ext;
+	id id;
 	lines_blank lines;
 };
 
@@ -90,7 +87,7 @@ struct result final
 		} counts;
 		ratio ratio;
 	};
-	using distribution = std::unordered_map<std::string, file_stats>;
+	using distribution = std::unordered_map<id, file_stats>;
 
 	distribution dist;
 	std::deque<file> files;
@@ -99,7 +96,7 @@ struct result final
 	template <template <typename...> typename Cont = std::map, typename Pred, typename... Args>
 	auto transform_dist(Pred predicate) const
 	{
-		Cont<std::string, file_stats, Args...> ret;
+		Cont<id, file_stats, Args...> ret;
 		for (auto const& [ext, data] : dist)
 		{
 			if (predicate(ext, data))

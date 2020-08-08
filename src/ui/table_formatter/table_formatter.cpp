@@ -68,7 +68,21 @@ bool table_formatter::sort(uint8_t col_index, bool descending)
 		std::move(m_data.rows.begin(), m_data.rows.end(), std::back_inserter(rows));
 		auto index = (std::size_t)col_index;
 		std::sort(rows.begin(), rows.end(), [index, descending](row const& lhs, row const& rhs) -> bool {
-			return descending ? lhs.at(index) > rhs.at(index) : lhs.at(index) < rhs.at(index);
+			auto const& l = lhs.at(index);
+			auto const& r = rhs.at(index);
+			if (auto pl = std::get_if<uint64_t>(&l.number); auto pr = std::get_if<uint64_t>(&r.number))
+			{
+				return descending ? *pl > *pr : *pl < *pr;
+			}
+			else if (auto pl = std::get_if<int64_t>(&l.number); auto pr = std::get_if<int64_t>(&r.number))
+			{
+				return descending ? *pl > *pr : *pl < *pr;
+			}
+			else if (auto pl = std::get_if<double>(&l.number); auto pr = std::get_if<double>(&r.number))
+			{
+				return descending ? *pl > *pr : *pl < *pr;
+			}
+			return descending ? l.text > r.text : l.text < r.text;
 		});
 		std::move(rows.begin(), rows.end(), m_data.rows.begin());
 		return true;
@@ -93,7 +107,7 @@ std::string table_formatter::to_string() const
 	}
 	for (auto const& row : m_data.rows)
 	{
-		auto per_row = [&row](col const&, std::size_t index) -> std::string const& { return index >= row.size() ? blank_str : row.at(index); };
+		auto per_row = [&row](col const&, std::size_t index) -> std::string const& { return index >= row.size() ? blank_str : row.at(index).text; };
 		serialise_row(str, m_info.col_pad, per_row);
 	}
 	return str.str();

@@ -62,9 +62,9 @@ void trim_leading_spaces(std::string_view& out_line)
 	}
 }
 
-bool line_comment_at_start(locc::config const& config, std::string_view sub_line)
+bool line_comment_at_start(locc::comment_info const& info, std::string_view sub_line)
 {
-	for (auto& str : config.comment_lines)
+	for (auto& str : info.comment_lines)
 	{
 		if (auto const search = sub_line.find(str); search == 0)
 		{
@@ -74,19 +74,19 @@ bool line_comment_at_start(locc::config const& config, std::string_view sub_line
 	return false;
 }
 
-void trim_leading_comment_blocks(locc::config const& config, locc::comment_block const* open_block, std::string_view& out_line)
+void trim_leading_comment_blocks(locc::comment_info const& info, locc::comment_block const* open_block, std::string_view& out_line)
 {
 	if (!out_line.empty())
 	{
 		if (!open_block)
 		{
-			for (auto const& block : config.comment_blocks)
+			for (auto const& block : info.comment_blocks)
 			{
 				if (auto begin = out_line.find(block.first); begin != locc::null_index)
 				{
 					open_block = &block;
 					out_line = out_line.substr(begin + block.first.size());
-					trim_leading_comment_blocks(config, open_block, out_line);
+					trim_leading_comment_blocks(info, open_block, out_line);
 				}
 			}
 		}
@@ -96,14 +96,14 @@ void trim_leading_comment_blocks(locc::config const& config, locc::comment_block
 			{
 				out_line = out_line.substr(end + open_block->second.size());
 				open_block = nullptr;
-				trim_leading_comment_blocks(config, open_block, out_line);
+				trim_leading_comment_blocks(info, open_block, out_line);
 			}
 		}
 	}
 	return;
 }
 
-void count_line(locc::config const& config, locc::file& out_file, locc::comment_block const* open_block, std::string_view line)
+void count_line(locc::comment_info const& info, locc::file& out_file, locc::comment_block const* open_block, std::string_view line)
 {
 	++out_file.lines.total;
 	if (cfg::test(cfg::flag::debug) && g_DEBUG_skip_to_line == out_file.lines.total)
@@ -113,13 +113,13 @@ void count_line(locc::config const& config, locc::file& out_file, locc::comment_
 	trim_leading_spaces(line);
 	if (!open_block)
 	{
-		if (line_comment_at_start(config, line))
+		if (line_comment_at_start(info, line))
 		{
 			++out_file.lines.comments;
 		}
 		else
 		{
-			trim_leading_comment_blocks(config, open_block, line);
+			trim_leading_comment_blocks(info, open_block, line);
 			if (!line.empty())
 			{
 				++out_file.lines.code;
@@ -132,7 +132,7 @@ void count_line(locc::config const& config, locc::file& out_file, locc::comment_
 	}
 	else
 	{
-		trim_leading_comment_blocks(config, open_block, line);
+		trim_leading_comment_blocks(info, open_block, line);
 		if (!line.empty())
 		{
 			++out_file.lines.comments;
@@ -152,10 +152,10 @@ void count_lines(locc::file& out_file)
 		out_file.lines.code = out_file.lines.total = 1;
 		std::string line;
 		locc::comment_block const* open_block = nullptr;
-		auto const& config = cfg::find_config(out_file.ext);
+		auto const& info = cfg::g_settings.find_comment_info(out_file.ext);
 		while (std::getline(f, line))
 		{
-			count_line(config, out_file, open_block, line);
+			count_line(info, out_file, open_block, line);
 		}
 	}
 }

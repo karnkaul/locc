@@ -32,7 +32,7 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 {
 	if (match_any(key, "skip-substr"))
 	{
-		parse_values(value, [](auto v) { cfg::g_skip_substrs.insert(std::string(v)); });
+		parse_values(value, [](auto v) { cfg::g_settings.skip_substrs.insert(std::string(v)); });
 		return true;
 	}
 	else if (match_any(key, "e", "extensions"))
@@ -40,9 +40,21 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 		parse_values(value, [](auto v) {
 			if (v.at(0) == '.')
 			{
-				cfg::g_ext_passlist.insert(std::string(v));
+				cfg::g_settings.ext_passlist.insert(std::string(v));
 			}
 		});
+		return true;
+	}
+	else if (match_any(key, "sort-by"))
+	{
+		for (std::size_t i = 0; i < cfg::g_columns.size(); ++i)
+		{
+			if (std::string_view(value) == cfg::g_columns.at(i).name)
+			{
+				cfg::g_sort_by = (cfg::col)i;
+				break;
+			}
+		}
 		return true;
 	}
 	else if (match_any(key, "b", "blanks"))
@@ -93,7 +105,9 @@ void locc::print_debug_prologue()
 	{
 		log(" [none]");
 	}
-	log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode), "\n\n");
+	log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode));
+	log("\n  -- sort-by: ", cfg::g_columns.at((std::size_t)cfg::g_sort_by).name);
+	log("\n\n");
 }
 
 void locc::print(locc::result const& result)
@@ -118,12 +132,10 @@ void locc::print(locc::result const& result)
 		if (!cfg::test(cfg::flag::quiet))
 		{
 			auto dist = result.transform_dist();
-			tf.add_column("File", true);
-			tf.add_column("LOC");
-			tf.add_column("Total");
-			tf.add_column("Comments");
-			tf.add_column("Files");
-			auto sort_index = tf.add_column("Ratio");
+			for (auto const& column : cfg::g_columns)
+			{
+				tf.add_column(column.ui_name(), column.reverse);
+			}
 			locc::result::file_stats total;
 			for (auto const& [id, data] : dist)
 			{
@@ -132,7 +144,7 @@ void locc::print(locc::result const& result)
 				total.counts.files += data.counts.files;
 				total.ratio.add(data.ratio);
 			}
-			tf.sort(sort_index, true);
+			tf.sort((uint8_t)cfg::g_sort_by, true);
 			tf.add_row("Total", total.counts.lines.code, total.counts.lines.total, total.counts.lines.comments, total.counts.files, total.ratio.code);
 			log("\n", tf.to_string(), "\n");
 		}
