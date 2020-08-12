@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <stdexcept>
 #include <kt/args_parser/args_parser.hpp>
-#include <kt/dumb_json/dumb_json.hpp>
 #include <app/config.hpp>
 #include <app/file_list_generator.hpp>
 #include <app/line_counter.hpp>
@@ -69,19 +68,7 @@ std::deque<locc::file> list_files(std::deque<locc::parser::entry> entries)
 	{
 		cfg::g_settings.ext_passlist.insert(ext);
 	}
-	for (auto iter = entries.begin(); iter != entries.end();)
-	{
-		auto& [key, value] = *iter;
-		if (locc::parse_options(key, value))
-		{
-			iter = entries.erase(iter);
-		}
-		else
-		{
-			return locc::file_list(std::move(entries));
-		}
-	}
-	return {};
+	return locc::file_list(std::move(entries));
 }
 
 void run_loc(std::deque<locc::file> files)
@@ -101,14 +88,8 @@ void run_loc(std::deque<locc::file> files)
 }
 } // namespace
 
-namespace kt::dj
-{
-void test();
-}
-
 int main(int argc, char** argv)
 {
-	kt::dj::test();
 	locc::parser parser;
 	std::vector<std::string_view> args;
 	args.reserve((std::size_t)argc);

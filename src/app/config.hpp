@@ -61,10 +61,11 @@ inline std::array<column, (std::size_t)col::count_> g_columns = {
 
 struct settings final
 {
+	stdfs::path json = "locc_settings.json";
 	std::unordered_set<locc::ext> ext_passlist;
 	std::unordered_map<locc::ext, locc::id> ext_to_id;
-	std::unordered_set<std::string> skip_substrs = {"CMakeFiles", ".vscode", ".vs", ".xcode"};
-	std::unordered_set<std::string> filename_as_ext = {"Makefile", "CMakeLists.txt", ".gitignore", ".gitattributes", ".gitmodules"};
+	std::unordered_set<std::string> skip_substrs = {"CMakeFiles", "CMakeCache.txt", ".vscode", ".vs", ".xcode"};
+	std::unordered_set<std::string> filenames_as_ext = {"Makefile", "CMakeLists.txt", ".gitignore", ".gitattributes", ".gitmodules"};
 	// clang-format off
 	std::unordered_map<locc::ext, locc::comment_info> comment_infos = {
 		{"c-style", {{"//"}, {{"/*", "*/"}}}},
@@ -102,31 +103,9 @@ struct settings final
 	};
 	// clang-format on
 
-	inline locc::comment_info const& find_comment_info(locc::ext const& extension) const
-	{
-		if (auto iter = comment_infos.find(extension); iter != comment_infos.end())
-		{
-			return iter->second;
-		}
-		static locc::comment_info const default_ret;
-		return default_ret;
-	}
-
-	inline locc::id get_id(std::string const& query) const
-	{
-		if (!query.empty())
-		{
-			if (auto search = ext_to_id.find(query); search != ext_to_id.end())
-			{
-				return search->second;
-			}
-			if (query.at(0) == '.')
-			{
-				return "*" + query;
-			}
-		}
-		return query;
-	}
+	locc::comment_info const& find_comment_info(locc::ext const& extension) const;
+	locc::id get_id(std::string const& query) const;
+	bool import();
 };
 
 inline settings g_settings;

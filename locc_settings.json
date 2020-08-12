@@ -1,0 +1,80 @@
+{
+	"no_defaults": true,
+	"skip_substrs": [
+		"CMakeFiles",
+		"CMakeCache.txt",
+		".vscode",
+		".vs",
+		".xcode"
+	],
+	"filenames_as_ext": [
+		"Makefile",
+		"CMakeLists.txt",
+		".gitignore",
+		".gitattributes",
+		".gitmodules"
+	],
+	"ext_groups": {
+		"c-style": [
+			".c",
+			".cc",
+			".cpp",
+			".h",
+			".hpp",
+			".inl",
+			".tpp",
+			".java",
+			".cs",
+			".js",
+			".css"
+		],
+		"bash-style": [".sh", ".py", "CMakeLists.txt"],
+		"xml-style": [".html", ".xml"]
+	},
+	"comment_infos": {
+		"c-style": {
+			"lines": ["//"],
+			"blocks": [
+				{
+					"open": "/*",
+					"close": "*/"
+				}
+			]
+		},
+		"bash-style": {
+			"lines": ["#"]
+		},
+		"xml-style": {
+			"blocks": [
+				{
+					"open": "<!--",
+					"close": "-->"
+				}
+			]
+		}
+	},
+	"id_groups": {
+		"C": [".c"],
+		"C++": [".cc", ".cpp"],
+		"C header": [".h"],
+		"C++ header": [".hpp", ".inl", ".tpp"],
+		"Java": [".java"],
+		"C#": [".cs"],
+		"CMake script": ["CMakeLists.txt", ".cmake"],
+		"Shell script": [".sh"],
+		"Python": [".py"],
+		"JavaScript": [".js"],
+		"TypeScript": [".ts"],
+		"Plain Text": [".txt"],
+		"CSS": [".css"],
+		"JSON": [".json"],
+		"YAML": [".yml"],
+		"gitignore": [".gitignore"],
+		"gitattributes": [".gitattributes"],
+		"CSV": [".csv"],
+		"INI": [".ini"],
+		"HTML": [".htm", ".html"],
+		"XML": [".xml"],
+		"Markdown": [".md"]
+	}
+}

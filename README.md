@@ -119,6 +119,7 @@ Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
 Use CMake and a generator of your choice.
 Requirements:
 
+- Windows / Linux (any architecture)
 - C++17 compiler (and stdlib)
 
 ### Contributing

@@ -18,7 +18,7 @@ std::optional<locc::file> include_file(stdfs::path const& path)
 		return {};
 	}
 	auto const filename = path.filename().generic_string();
-	if (cfg::g_settings.filename_as_ext.find(filename) != cfg::g_settings.filename_as_ext.end())
+	if (cfg::g_settings.filenames_as_ext.find(filename) != cfg::g_settings.filenames_as_ext.end())
 	{
 		return locc::file{path, filename, cfg::g_settings.get_id(filename), {}};
 	}

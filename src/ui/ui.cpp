@@ -87,9 +87,18 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 		cfg::set(cfg::flag::follow_symlinks);
 		return true;
 	}
-	else if (match_any(key, "foo"))
+	else if (match_any(key, "settings"))
 	{
+		cfg::g_settings.json = std::move(value);
 		return true;
+	}
+	if (cfg::g_settings.json.empty())
+	{
+		cfg::g_settings.json = "locc_settings.json";
+	}
+	if (cfg::g_settings.import())
+	{
+		locc::log(cfg::test(cfg::flag::verbose), "\nImported config from [", cfg::g_settings.json.generic_string(), "]");
 	}
 	return false;
 }

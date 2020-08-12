@@ -30,6 +30,8 @@ else()
 	message(WARNING "Git / .git not found, submodules missing, expect compile errors!")
 endif()
 
+add_subdirectory(libs/dumb_json)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.?pp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 set(OUTFILE "${CMAKE_CURRENT_BINARY_DIR}/src/build_version.hpp")
@@ -40,8 +42,8 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml.in" "${CMAKE_CURRENT_S
 
 add_executable(locc ${SOURCES})
 target_compile_features(locc PUBLIC cxx_std_17)
-target_include_directories(locc PRIVATE src)
-target_include_directories(locc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src")
+target_include_directories(locc PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/src")
+target_link_libraries(locc PRIVATE djson)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(locc PRIVATE pthread stdc++fs)
