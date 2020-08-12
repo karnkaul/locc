@@ -66,15 +66,15 @@ struct settings final
 	std::unordered_set<std::string> skip_substrs = {"CMakeFiles", ".vscode", ".vs", ".xcode"};
 	std::unordered_set<std::string> filename_as_ext = {"Makefile", "CMakeLists.txt", ".gitignore", ".gitattributes", ".gitmodules"};
 	// clang-format off
+	std::unordered_map<locc::ext, locc::comment_info> comment_infos = {
+		{"c-style", {{"//"}, {{"/*", "*/"}}}},
+		{"bash-style", {{"#"}, {}}},
+		{"xml-style", {{}, {{"<!--", "-->"}}}},
+	};
 	std::unordered_map<locc::ext_group, std::deque<locc::ext>> ext_groups = {
 		{"c-style", {".c", ".cc", ".cpp", ".h", ".hpp", ".inl", ".tpp", ".java", ".cs", ".js", ".css"}},
 		{"bash-style", {".sh", ".py", "CMakeLists.txt"}},
 		{"xml-style", {".html", ".xml"}}
-	};
-	std::unordered_map<locc::ext, locc::comment_info> ext_comment_info = {
-		{"c-style", {{"//"}, {{"/*", "*/"}}}},
-		{"bash-style", {{"#"}, {}}},
-		{"xml-style", {{}, {{"<!--", "-->"}}}},
 	};
 	std::unordered_map<locc::id, std::deque<locc::ext>> id_groups = {
 		{"C", {".c"}},
@@ -104,7 +104,7 @@ struct settings final
 
 	inline locc::comment_info const& find_comment_info(locc::ext const& extension) const
 	{
-		if (auto iter = ext_comment_info.find(extension); iter != ext_comment_info.end())
+		if (auto iter = comment_infos.find(extension); iter != comment_infos.end())
 		{
 			return iter->second;
 		}

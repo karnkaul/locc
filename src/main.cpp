@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <stdexcept>
 #include <kt/args_parser/args_parser.hpp>
+#include <kt/dumb_json/dumb_json.hpp>
 #include <app/config.hpp>
 #include <app/file_list_generator.hpp>
 #include <app/line_counter.hpp>
@@ -50,7 +51,7 @@ std::deque<locc::file> list_files(std::deque<locc::parser::entry> entries)
 			cfg::g_settings.ext_passlist.insert(ext);
 		}
 	}
-	for (auto const& [ext, _] : cfg::g_settings.ext_comment_info)
+	for (auto const& [ext, _] : cfg::g_settings.comment_infos)
 	{
 		if (ext.at(0) == '.')
 		{
@@ -87,11 +88,11 @@ void run_loc(std::deque<locc::file> files)
 {
 	for (auto const& [group, exts] : cfg::g_settings.ext_groups)
 	{
-		if (auto search = cfg::g_settings.ext_comment_info.find(group); search != cfg::g_settings.ext_comment_info.end())
+		if (auto search = cfg::g_settings.comment_infos.find(group); search != cfg::g_settings.comment_infos.end())
 		{
 			for (auto const& ext : exts)
 			{
-				cfg::g_settings.ext_comment_info[ext] = search->second;
+				cfg::g_settings.comment_infos[ext] = search->second;
 			}
 		}
 	}
@@ -100,8 +101,14 @@ void run_loc(std::deque<locc::file> files)
 }
 } // namespace
 
+namespace kt::dj
+{
+void test();
+}
+
 int main(int argc, char** argv)
 {
+	kt::dj::test();
 	locc::parser parser;
 	std::vector<std::string_view> args;
 	args.reserve((std::size_t)argc);

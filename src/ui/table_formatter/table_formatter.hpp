@@ -15,11 +15,11 @@ public:
 	struct cell final
 	{
 		std::string text;
-		std::variant<uint64_t, int64_t, double, bool> number;
+		std::variant<std::uint64_t, std::int64_t, double, bool> number;
 	};
 
 	using row = std::deque<cell>;
-	using fill = std::pair<char, uint16_t>;
+	using fill = std::pair<char, std::uint16_t>;
 
 	struct info final
 	{
@@ -38,8 +38,8 @@ private:
 	struct col final
 	{
 		std::string header;
-		uint8_t width = 0;
-		uint8_t precision = 3;
+		std::uint8_t width = 0;
+		std::uint8_t precision = 3;
 		bool left_aligned = false;
 	};
 
@@ -51,13 +51,13 @@ private:
 	} m_data;
 
 public:
-	int8_t add_column(std::string header, bool left_aligned = false, uint8_t precision = 3);
+	std::int8_t add_column(std::string header, bool left_aligned = false, std::uint8_t precision = 3);
 
 	template <typename Arg, typename... Args>
 	void add_row(Arg&& arg, Args&&... args);
 
 	void clear();
-	bool sort(uint8_t col_index, bool descending);
+	bool sort(std::uint8_t col_index, bool descending);
 
 	std::string to_string() const;
 
@@ -68,7 +68,7 @@ private:
 	template <typename Arg, typename... Args>
 	void add_row_impl(Arg&& arg, Args&&... args);
 
-	uint16_t table_width() const;
+	std::uint16_t table_width() const;
 
 	template <typename F>
 	void serialise_row(std::ostringstream& out_str, char c, F cell_value) const;
@@ -107,11 +107,11 @@ void table_formatter::add_cell(T&& arg)
 		cell.text = std::to_string(arg);
 		if constexpr (std::is_unsigned_v<std::decay_t<T>>)
 		{
-			cell.number = (uint64_t)arg;
+			cell.number = (std::uint64_t)arg;
 		}
 		else
 		{
-			cell.number = (int64_t)arg;
+			cell.number = (std::int64_t)arg;
 		}
 	}
 	else if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
@@ -135,7 +135,7 @@ void table_formatter::add_cell(T&& arg)
 		}
 		cell.text = str.str();
 	}
-	col.width = std::max((uint8_t)cell.text.size(), col.width);
+	col.width = std::max((std::uint8_t)cell.text.size(), col.width);
 }
 
 template <typename Arg, typename... Args>

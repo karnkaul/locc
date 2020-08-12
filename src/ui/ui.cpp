@@ -144,7 +144,7 @@ void locc::print(locc::result const& result)
 				total.counts.files += data.counts.files;
 				total.ratio.add(data.ratio);
 			}
-			tf.sort((uint8_t)cfg::g_sort_by, true);
+			tf.sort((std::uint8_t)cfg::g_sort_by, true);
 			tf.add_row("Total", total.counts.lines.code, total.counts.lines.total, total.counts.lines.comments, total.counts.files, total.ratio.code);
 			log("\n", tf.to_string(), "\n");
 		}
