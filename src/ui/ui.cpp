@@ -10,15 +10,18 @@ void parse_values(locc::parser::value_view values, F f)
 {
 	while (!values.empty())
 	{
-		std::size_t const comma = values.find(",");
-		if (comma != locc::null_index)
+		std::size_t const comma = values.find(',');
+		if (comma > 0 && comma != locc::null_index)
 		{
 			f(values.substr(0, comma));
 			values = values.substr(comma + 1);
 		}
 		else
 		{
-			f(values);
+			if (!values.empty())
+			{
+				f(values);
+			}
 			values = {};
 		}
 	}
@@ -29,12 +32,29 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 {
 	if (match_any(key, "skip-substr"))
 	{
-		parse_values(value, [](auto v) { cfg::g_skip_substrs.insert(std::string(v)); });
+		parse_values(value, [](auto v) { cfg::g_settings.skip_substrs.insert(std::string(v)); });
 		return true;
 	}
 	else if (match_any(key, "e", "extensions"))
 	{
-		parse_values(value, [](auto v) { cfg::g_ext_passlist.insert(std::string(v)); });
+		parse_values(value, [](auto v) {
+			if (v.at(0) == '.')
+			{
+				cfg::g_settings.ext_passlist.insert(std::string(v));
+			}
+		});
+		return true;
+	}
+	else if (match_any(key, "sort-by"))
+	{
+		for (std::size_t i = 0; i < cfg::g_columns.size(); ++i)
+		{
+			if (std::string_view(value) == cfg::g_columns.at(i).name)
+			{
+				cfg::g_sort_by = (cfg::col)i;
+				break;
+			}
+		}
 		return true;
 	}
 	else if (match_any(key, "b", "blanks"))
@@ -62,9 +82,23 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 		cfg::set(cfg::flag::quiet);
 		return true;
 	}
-	else if (match_any(key, "foo"))
+	else if (match_any(key, "s", "symlinks"))
 	{
+		cfg::set(cfg::flag::follow_symlinks);
 		return true;
+	}
+	else if (match_any(key, "settings"))
+	{
+		cfg::g_settings.json = std::move(value);
+		return true;
+	}
+	if (cfg::g_settings.json.empty())
+	{
+		cfg::g_settings.json = "locc_settings.json";
+	}
+	if (cfg::g_settings.import())
+	{
+		locc::log(cfg::test(cfg::flag::verbose), "\nImported config from [", cfg::g_settings.json.generic_string(), "]");
 	}
 	return false;
 }
@@ -80,7 +114,9 @@ void locc::print_debug_prologue()
 	{
 		log(" [none]");
 	}
-	log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode), "\n\n");
+	log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode));
+	log("\n  -- sort-by: ", cfg::g_columns.at((std::size_t)cfg::g_sort_by).name);
+	log("\n\n");
 }
 
 void locc::print(locc::result const& result)
@@ -105,21 +141,19 @@ void locc::print(locc::result const& result)
 		if (!cfg::test(cfg::flag::quiet))
 		{
 			auto dist = result.transform_dist();
-			tf.add_column("Extension", true);
-			tf.add_column("LOC");
-			tf.add_column("Total");
-			tf.add_column("Comments");
-			tf.add_column("Files");
-			auto sort_index = tf.add_column("Ratio");
-			locc::result::ext_data total;
-			for (auto const& [ext, data] : dist)
+			for (auto const& column : cfg::g_columns)
 			{
-				tf.add_row(ext, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.counts.files, data.ratio.code);
+				tf.add_column(column.ui_name(), column.reverse);
+			}
+			locc::result::file_stats total;
+			for (auto const& [id, data] : dist)
+			{
+				tf.add_row(id, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.counts.files, data.ratio.code);
 				total.counts.lines.add(data.counts.lines);
 				total.counts.files += data.counts.files;
 				total.ratio.add(data.ratio);
 			}
-			tf.sort(sort_index, true);
+			tf.sort((std::uint8_t)cfg::g_sort_by, true);
 			tf.add_row("Total", total.counts.lines.code, total.counts.lines.total, total.counts.lines.comments, total.counts.files, total.ratio.code);
 			log("\n", tf.to_string(), "\n");
 		}

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 
-set(LOCC_VERSION "0.0.1" CACHE STRING "Application Version" FORCE)
+set(LOCC_VERSION "0.0.2" CACHE STRING "Application Version" FORCE)
 project(locc VERSION ${LOCC_VERSION})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -30,6 +30,8 @@ else()
 	message(WARNING "Git / .git not found, submodules missing, expect compile errors!")
 endif()
 
+add_subdirectory(libs/dumb_json)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.?pp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
 set(OUTFILE "${CMAKE_CURRENT_BINARY_DIR}/src/build_version.hpp")
@@ -40,12 +42,13 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml.in" "${CMAKE_CURRENT_S
 
 add_executable(locc ${SOURCES})
 target_compile_features(locc PUBLIC cxx_std_17)
-target_include_directories(locc PRIVATE src)
-target_include_directories(locc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src")
+target_include_directories(locc PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/src")
+target_link_libraries(locc PRIVATE djson)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(locc PRIVATE pthread stdc++fs)
 	target_compile_options(locc PRIVATE -fPIC)
+	target_link_options(locc PRIVATE -no-pie)
 endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(locc PRIVATE /MP)

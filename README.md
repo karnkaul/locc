@@ -25,29 +25,28 @@ Linux kernel (20 million LOC)
 ```
 $ time ./locc linux-master
 
- | Extension |      LOC |    Total | Comments | Files | Ratio |
- --------------------------------------------------------------
- | .c        | 15994571 | 19768868 |    35390 | 28751 | 0.755 |
- | .h        |  4899262 |  6066731 |   139553 | 21033 | 0.231 |
- | .txt      |   194380 |   240694 |     4561 |  3220 | 0.009 |
- | .sh       |    55046 |    78839 |    10064 |   495 | 0.003 |
- | .py       |    25662 |    32936 |     2716 |   106 | 0.001 |
- | .cc       |     1681 |     1972 |       17 |     1 | 0.000 |
- | .cpp      |      251 |      314 |        2 |     3 | 0.000 |
- | .css      |      105 |      138 |        0 |     1 | 0.000 |
- | .inl      |       99 |      127 |        0 |     2 | 0.000 |
- | Total     | 21171057 | 26190619 |   192303 | 53612 | 1.000 |
+ | File          |     Code |    Total | Comments | Files | Ratio |
+ ------------------------------------------------------------------
+ | C             | 16091231 | 19881903 |    35621 | 28974 | 0.748 |
+ | C header      |  4908390 |  6078608 |   139577 | 21121 | 0.228 |
+ | Plain text    |   200603 |   242803 |        0 |  3230 | 0.009 |
+ | JSON          |   175200 |   175200 |        0 |   328 | 0.008 |
+ | Shell script  |    57795 |    82865 |    10413 |   517 | 0.003 |
+ | Makefile      |    57124 |    66901 |        0 |  2583 | 0.003 |
+ | Python        |    26771 |    34364 |     2778 |   113 | 0.001 |
+ | C++           |     1993 |     2360 |       23 |     8 | 0.000 |
+ | gitignore     |     1693 |     1716 |        0 |   254 | 0.000 |
+ | CSV           |      209 |      210 |        0 |     6 | 0.000 |
+ | CSS           |      105 |      138 |        0 |     1 | 0.000 |
+ | C++ header    |       99 |      127 |        0 |     2 | 0.000 |
+ | INI           |        7 |        8 |        0 |     1 | 0.000 |
+ | gitattributes |        7 |        7 |        0 |     2 | 0.000 |
+ | Total         | 21521227 | 26567210 |   188412 | 57140 | 1.000 |
 
 
-real    0m0.699s
-user    0m3.462s
-sys     0m0.558s
-
-$ time ./locc -q linux-master
-21171057
-real    0m0.690s
-user    0m3.431s
-sys     0m0.583s
+real    0m0.847s
+user    0m3.698s
+sys     0m0.545s
 ```
 
 This repo (at some point in the past)
@@ -84,12 +83,27 @@ $ ./locc -v -e=.md .
 
 ```
 
+### Performance
+
+`locc` is incredibly lightweight when compared to `loc` / `scc` / etc (orders of magnitude smaller), and generally runs faster than them as well, albeit with the least amount of stats / customisation.
+
+Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
+
+```
+ | Program |    Size |     Execution Time     |
+ ----------------------------------------------
+ | loc     | 4786KiB |  758.000ms (+/-19.7ms) |
+ | scc     | 4561KiB | 1135.667ms (+/-6.7ms)  |
+ | locc    |  298KiB |  830.667ms (+/-4.7ms)  |
+```
+
 ### Options
 
 `locc` supports a few command line parameters:
 
 - `--skip-substr=<substr0>[,substr1,...]`: Add path substring pattern to ignore
 - `-e=` / `--extensions=<.ext0>[,.ext1,...]`: Additional extensions to count in implicit mode
+- `--sort-by=<column_name>`: Sort results by column (lowercase, `code` by default)
 - `-o` / `--one-thread`: Run everything on the main thread
 - `-b` / `--blanks`: Include blank lines as lines of code
 - `-q` / `--quiet`: Print nothing but total lines of code
@@ -105,6 +119,7 @@ $ ./locc -v -e=.md .
 Use CMake and a generator of your choice.
 Requirements:
 
+- Windows / Linux (any architecture)
 - C++17 compiler (and stdlib)
 
 ### Contributing

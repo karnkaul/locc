@@ -41,7 +41,7 @@ struct worker final
 			{
 				break;
 			}
-			task();
+			(*task)();
 		}
 	}
 };
@@ -62,9 +62,9 @@ void trim_leading_spaces(std::string_view& out_line)
 	}
 }
 
-bool line_comment_at_start(locc::config const& config, std::string_view sub_line)
+bool line_comment_at_start(locc::comment_info const& info, std::string_view sub_line)
 {
-	for (auto& str : config.comment_lines)
+	for (auto& str : info.comment_lines)
 	{
 		if (auto const search = sub_line.find(str); search == 0)
 		{
@@ -74,19 +74,19 @@ bool line_comment_at_start(locc::config const& config, std::string_view sub_line
 	return false;
 }
 
-void trim_leading_comment_blocks(locc::config const& config, locc::comment_block const* open_block, std::string_view& out_line)
+void trim_leading_comment_blocks(locc::comment_info const& info, locc::comment_block const* open_block, std::string_view& out_line)
 {
 	if (!out_line.empty())
 	{
 		if (!open_block)
 		{
-			for (auto const& block : config.comment_blocks)
+			for (auto const& block : info.comment_blocks)
 			{
 				if (auto begin = out_line.find(block.first); begin != locc::null_index)
 				{
 					open_block = &block;
 					out_line = out_line.substr(begin + block.first.size());
-					trim_leading_comment_blocks(config, open_block, out_line);
+					trim_leading_comment_blocks(info, open_block, out_line);
 				}
 			}
 		}
@@ -96,14 +96,14 @@ void trim_leading_comment_blocks(locc::config const& config, locc::comment_block
 			{
 				out_line = out_line.substr(end + open_block->second.size());
 				open_block = nullptr;
-				trim_leading_comment_blocks(config, open_block, out_line);
+				trim_leading_comment_blocks(info, open_block, out_line);
 			}
 		}
 	}
 	return;
 }
 
-void count_line(locc::config const& config, locc::file& out_file, locc::comment_block const* open_block, std::string_view line)
+void count_line(locc::comment_info const& info, locc::file& out_file, locc::comment_block const* open_block, std::string_view line)
 {
 	++out_file.lines.total;
 	if (cfg::test(cfg::flag::debug) && g_DEBUG_skip_to_line == out_file.lines.total)
@@ -113,13 +113,13 @@ void count_line(locc::config const& config, locc::file& out_file, locc::comment_
 	trim_leading_spaces(line);
 	if (!open_block)
 	{
-		if (line_comment_at_start(config, line))
+		if (line_comment_at_start(info, line))
 		{
 			++out_file.lines.comments;
 		}
 		else
 		{
-			trim_leading_comment_blocks(config, open_block, line);
+			trim_leading_comment_blocks(info, open_block, line);
 			if (!line.empty())
 			{
 				++out_file.lines.code;
@@ -132,7 +132,7 @@ void count_line(locc::config const& config, locc::file& out_file, locc::comment_
 	}
 	else
 	{
-		trim_leading_comment_blocks(config, open_block, line);
+		trim_leading_comment_blocks(info, open_block, line);
 		if (!line.empty())
 		{
 			++out_file.lines.comments;
@@ -144,43 +144,39 @@ void count_line(locc::config const& config, locc::file& out_file, locc::comment_
 	}
 }
 
-locc::file count_lines(stdfs::path file_path)
+void count_lines(locc::file& out_file)
 {
-	locc::file ret;
-	std::ifstream f(stdfs::absolute(file_path), std::ios::in);
+	std::ifstream f(stdfs::absolute(out_file.path), std::ios::in);
 	if (f.good())
 	{
-		ret.lines.code = ret.lines.total = 1;
+		out_file.lines.code = out_file.lines.total = 1;
 		std::string line;
 		locc::comment_block const* open_block = nullptr;
-		auto const& config = cfg::find_config(file_path.extension().generic_string());
+		auto const& info = cfg::g_settings.find_comment_info(out_file.ext);
 		while (std::getline(f, line))
 		{
-			count_line(config, ret, open_block, line);
+			count_line(info, out_file, open_block, line);
 		}
 	}
-	ret.path = std::move(file_path);
-	return ret;
 }
 } // namespace
 
-locc::result locc::process(std::deque<stdfs::path> file_paths)
+locc::result locc::process(std::deque<file> files)
 {
 	result ret;
-	if (file_paths.empty())
+	if (files.empty())
 	{
 		return ret;
 	}
 	kt::lockable mutex;
 	bool const blanks = cfg::test(cfg::flag::blanks);
 	auto process_file = [&ret, &mutex, blanks](auto iter) {
-		auto& file_path = *iter;
-		auto ext = file_path.extension();
-		auto file = count_lines(std::move(file_path));
+		auto& file = *iter;
+		count_lines(file);
 		auto lock = mutex.lock();
 		ret.totals.total += file.lines.total;
 		ret.totals.code += file.lines.code;
-		auto& data = ret.dist[ext.empty() ? "[none]" : ext.generic_string()];
+		auto& data = ret.dist[file.id];
 		++data.counts.files;
 		if (blanks)
 		{
@@ -192,43 +188,33 @@ locc::result locc::process(std::deque<stdfs::path> file_paths)
 		data.counts.lines.total += file.lines.total;
 		ret.files.push_back(std::move(file));
 	};
-	int thread_count = cfg::test(cfg::flag::one_thread) ? 0 : (int)std::min((std::size_t)std::thread::hardware_concurrency() - 1, file_paths.size() - 1);
-	locc::log(cfg::test(cfg::flag::debug), "  -- parsing ", file_paths.size(), " files\n");
+	locc::log(cfg::test(cfg::flag::debug), "  -- parsing ", files.size(), " files\n");
+	int thread_count = cfg::test(cfg::flag::one_thread) ? 0 : (int)std::min((std::size_t)std::thread::hardware_concurrency() - 1, files.size() - 1);
+	g_workers.clear();
 	if (thread_count > 0)
 	{
-		g_workers.clear();
 		locc::log(cfg::test(cfg::flag::debug), "  -- launching ", thread_count, " worker threads\n");
 		for (int count = thread_count; count > 0; --count)
 		{
 			g_workers.push_back(worker(g_queue));
 		}
 	}
-	for (auto iter = file_paths.begin(); iter != file_paths.end(); ++iter)
+	for (auto iter = files.begin(); iter != files.end(); ++iter)
 	{
-		if (thread_count > 0)
-		{
-			g_queue.push([iter, process_file]() { process_file(iter); });
-		}
-		else
-		{
-			process_file(iter);
-		}
+		g_queue.push([iter, process_file]() { process_file(iter); });
 	}
-	if (thread_count > 0)
+	while (!g_queue.empty())
 	{
-		while (!g_queue.empty())
-		{
-			auto task = g_queue.pop();
-			task();
-		}
-		auto residue = g_queue.clear();
-		g_queue.active(false);
-		g_workers.clear();
-		locc::log(cfg::test(cfg::flag::debug), "  -- worker threads completed\n");
-		for (auto& task : residue)
-		{
-			task();
-		}
+		auto task = g_queue.pop();
+		(*task)();
+	}
+	auto residue = g_queue.clear();
+	g_queue.active(false);
+	g_workers.clear();
+	locc::log(cfg::test(cfg::flag::debug) && thread_count > 0, "  -- worker threads completed\n");
+	for (auto& task : residue)
+	{
+		task();
 	}
 	locc::log(cfg::test(cfg::flag::debug), "\n");
 	for (auto& [_, data] : ret.dist)

@@ -15,19 +15,17 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 	for (auto iter = out_entries.begin(); iter != out_entries.end();)
 	{
 		auto& [key, value] = *iter;
-		bool const help = locc::match_any(key, "h", "help");
-		bool const version = !help && locc::match_any(key, "version");
-		if (help)
+		if (locc::match_any(key, "h", "help"))
 		{
 			locc::print_help();
 			return false;
 		}
-		if (version)
+		else if (locc::match_any(key, "version"))
 		{
 			locc::print_version();
-			return true;
+			return false;
 		}
-		if (help || version || locc::parse_options(key, value))
+		if (locc::parse_options(key, value))
 		{
 			iter = out_entries.erase(iter);
 		}
@@ -43,44 +41,49 @@ bool parse_options(std::deque<locc::parser::entry>& out_entries)
 	return true;
 }
 
-std::deque<stdfs::path> list_files(std::deque<locc::parser::entry> entries)
+std::deque<locc::file> list_files(std::deque<locc::parser::entry> entries)
 {
-	for (auto& [ext, _] : cfg::g_ext_groups)
+	for (auto const& [_, exts] : cfg::g_settings.ext_groups)
 	{
-		cfg::g_ext_passlist.insert(ext);
+		for (auto const& ext : exts)
+		{
+			cfg::g_settings.ext_passlist.insert(ext);
+		}
 	}
-	for (auto& [ext, _] : cfg::g_ext_config)
+	for (auto const& [ext, _] : cfg::g_settings.comment_infos)
 	{
 		if (ext.at(0) == '.')
 		{
-			cfg::g_ext_passlist.insert(ext);
+			cfg::g_settings.ext_passlist.insert(ext);
 		}
 	}
-	for (auto iter = entries.begin(); iter != entries.end();)
+	for (auto const& [id, exts] : cfg::g_settings.id_groups)
 	{
-		auto& [key, value] = *iter;
-		if (locc::parse_options(key, value))
+		for (auto const& ext : exts)
 		{
-			iter = entries.erase(iter);
-		}
-		else
-		{
-			return locc::file_list(std::move(entries));
+			cfg::g_settings.ext_to_id[ext] = id;
 		}
 	}
-	return {};
+	for (auto const& [ext, _] : cfg::g_settings.ext_to_id)
+	{
+		cfg::g_settings.ext_passlist.insert(ext);
+	}
+	return locc::file_list(std::move(entries));
 }
 
-void run_loc(std::deque<stdfs::path> file_paths)
+void run_loc(std::deque<locc::file> files)
 {
-	for (auto const& [ext, group] : cfg::g_ext_groups)
+	for (auto const& [group, exts] : cfg::g_settings.ext_groups)
 	{
-		if (auto search = cfg::g_ext_config.find(group); search != cfg::g_ext_config.end())
+		if (auto search = cfg::g_settings.comment_infos.find(group); search != cfg::g_settings.comment_infos.end())
 		{
-			cfg::g_ext_config[ext] = search->second;
+			for (auto const& ext : exts)
+			{
+				cfg::g_settings.comment_infos[ext] = search->second;
+			}
 		}
 	}
-	auto result = locc::process(std::move(file_paths));
+	auto result = locc::process(std::move(files));
 	locc::print(result);
 }
 } // namespace
