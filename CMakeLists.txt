@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 
-set(LOCC_VERSION "0.0.2" CACHE STRING "Application Version" FORCE)
+set(LOCC_VERSION "0.0.3" CACHE STRING "Application Version" FORCE)
 project(locc VERSION ${LOCC_VERSION})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

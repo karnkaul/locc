@@ -17,87 +17,54 @@ std::stringstream& concat(std::stringstream& in);
 template <typename Arg, typename... Args>
 std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args);
 
-template <typename X, typename... Args>
-void xout([[maybe_unused]] X& ostream, [[maybe_unused]] Args&&... args);
-
-template <typename... Args>
-void log([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args);
-
-template <typename... Args>
-void err([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args);
-
-template <typename... Args>
-void log(Args&&... args);
-
-template <typename... Args>
-void err(Args&&... args);
-
-template <typename... Args>
-void log_force(Args&&... args);
-
-template <typename F, typename... Args>
-void do_if(bool predicate, F f, Args&&...);
-
-template <typename Pred, typename F, typename... Args>
-void do_if(Pred predicate, F f, Args&&...);
-
-inline std::stringstream& concat(std::stringstream& in)
+inline std::ostream& format(std::ostream& out, std::string_view fmt)
 {
-	return in;
+	out << fmt;
+	return out;
 }
 
 template <typename Arg, typename... Args>
-std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args)
+std::ostream& format(std::ostream& out, std::string_view fmt, Arg&& arg, Args&&... args)
 {
-	in << std::forward<Arg>(arg);
-	return concat(in, std::forward<Args>(args)...);
+	if (auto search = fmt.find("{}"); search != std::string::npos)
+	{
+		std::string_view text(fmt.data(), search);
+		out << text << std::forward<Arg>(arg);
+		return format(out, fmt.substr(search + 2), std::forward<Args>(args)...);
+	}
+	return format(out, fmt);
 }
 
 template <typename X, typename... Args>
-void xout([[maybe_unused]] X& ostream, [[maybe_unused]] Args&&... args)
+void xout(X& ostream, std::string_view fmt, Args&&... args)
 {
-	if constexpr (sizeof...(args) > 0)
-	{
-		std::stringstream str;
-		concat(str, std::forward<Args>(args)...);
-		ostream << str.str();
-	}
+	std::stringstream str;
+	format(str, fmt, std::forward<Args>(args)...);
+	ostream << str.str();
 }
 
 template <typename... Args>
-void log([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args)
+void log_if(bool predicate, std::string_view fmt, Args&&... args)
 {
 	if (predicate && !cfg::test(cfg::flag::quiet))
 	{
-		xout(std::cout, std::forward<Args>(args)...);
+		xout(std::cout, fmt, std::forward<Args>(args)...);
 	}
 }
 
 template <typename... Args>
-void err([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args)
+void err_if(bool predicate, std::string_view fmt, Args&&... args)
 {
 	if (predicate && !cfg::test(cfg::flag::quiet))
 	{
-		xout(std::cerr, std::forward<Args>(args)...);
+		xout(std::cerr, fmt, std::forward<Args>(args)...);
 	}
 }
 
 template <typename... Args>
-void log(Args&&... args)
+void log_force(std::string_view fmt, Args&&... args)
 {
-	log(true, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void err(Args&&... args)
-{
-	err(true, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void log_force(Args&&... args)
-{
-	xout(std::cout, std::forward<Args>(args)...);
+	xout(std::cout, fmt, std::forward<Args>(args)...);
 }
 
 template <typename F, typename... Args>

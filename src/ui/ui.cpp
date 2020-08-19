@@ -89,34 +89,34 @@ bool locc::parse_options(locc::parser::key const& key, locc::parser::value value
 	}
 	else if (match_any(key, "settings"))
 	{
-		cfg::g_settings.json = std::move(value);
+		cfg::g_settings.json_path = std::move(value);
 		return true;
 	}
-	if (cfg::g_settings.json.empty())
+	if (cfg::g_settings.json_path.empty())
 	{
-		cfg::g_settings.json = "locc_settings.json";
+		cfg::g_settings.json_path = "locc_settings.json";
 	}
 	if (cfg::g_settings.import())
 	{
-		locc::log(cfg::test(cfg::flag::verbose), "\nImported config from [", cfg::g_settings.json.generic_string(), "]");
+		locc::log_if(cfg::test(cfg::flag::verbose), "\nImported config from [{}]", cfg::g_settings.json_path.generic_string());
 	}
 	return false;
 }
 
 void locc::print_debug_prologue()
 {
-	log("\n  -- flags:");
+	log_if(true, "\n  -- flags:");
 	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i)
 	{
-		log(cfg::test((cfg::flag)i), " ", cfg::g_flag_names.at(i));
+		log_if(true, "{}, {}", cfg::test((cfg::flag)i), cfg::g_flag_names.at(i));
 	}
 	if (cfg::g_flags.none())
 	{
-		log(" [none]");
+		log_if(true, " [none]");
 	}
-	log("\n  -- mode: ", cfg::g_mode_names.at((std::size_t)cfg::g_mode));
-	log("\n  -- sort-by: ", cfg::g_columns.at((std::size_t)cfg::g_sort_by).name);
-	log("\n\n");
+	log_if(true, "\n  -- mode: {}", cfg::g_mode_names.at((std::size_t)cfg::g_mode));
+	log_if(true, "\n  -- sort-by: {}", cfg::g_columns.at((std::size_t)cfg::g_sort_by).name);
+	log_if(true, "\n\n");
 }
 
 void locc::print(locc::result const& result)
@@ -135,7 +135,7 @@ void locc::print(locc::result const& result)
 				tf.add_row(file.path.generic_string(), file.lines.code, file.lines.total, file.lines.comments);
 			}
 			tf.sort(sort_index, false);
-			log("\n", tf.to_string(), "\n");
+			log_if(true, "\n{}\n", tf.to_string());
 			tf.clear();
 		}
 		if (!cfg::test(cfg::flag::quiet))
@@ -155,11 +155,11 @@ void locc::print(locc::result const& result)
 			}
 			tf.sort((std::uint8_t)cfg::g_sort_by, true);
 			tf.add_row("Total", total.counts.lines.code, total.counts.lines.total, total.counts.lines.comments, total.counts.files, total.ratio.code);
-			log("\n", tf.to_string(), "\n");
+			log_if(true, "\n{}\n", tf.to_string());
 		}
 		else
 		{
-			log_force(result.totals.code);
+			log_force("{}", result.totals.code);
 		}
 	}
 }

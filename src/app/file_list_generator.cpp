@@ -76,14 +76,14 @@ std::deque<locc::file> locc::file_list(parser::type_t const& entries)
 							auto file = include_file(path);
 							if (file)
 							{
-								locc::log(cfg::test(cfg::flag::debug) && cfg::test(cfg::flag::verbose), "  -- tracking ", path.generic_string(), "\n");
+								locc::log_if(cfg::test(cfg::flag::debug) && cfg::test(cfg::flag::verbose), "  -- tracking {}\n ", path.generic_string());
 								ret.push_back(std::move(*file));
 							}
 						}
 					}
 					catch (std::exception const& e)
 					{
-						locc::err(cfg::test(cfg::flag::debug), e.what(), "\n");
+						locc::err_if(cfg::test(cfg::flag::debug), e.what(), "\n");
 					}
 				}
 				return ret;

@@ -188,12 +188,12 @@ locc::result locc::process(std::deque<file> files)
 		data.counts.lines.total += file.lines.total;
 		ret.files.push_back(std::move(file));
 	};
-	locc::log(cfg::test(cfg::flag::debug), "  -- parsing ", files.size(), " files\n");
+	locc::log_if(cfg::test(cfg::flag::debug), "  -- parsing {} files\n", files.size());
 	int thread_count = cfg::test(cfg::flag::one_thread) ? 0 : (int)std::min((std::size_t)std::thread::hardware_concurrency() - 1, files.size() - 1);
 	g_workers.clear();
 	if (thread_count > 0)
 	{
-		locc::log(cfg::test(cfg::flag::debug), "  -- launching ", thread_count, " worker threads\n");
+		locc::log_if(cfg::test(cfg::flag::debug), "  -- launching {} worker threads\n", thread_count);
 		for (int count = thread_count; count > 0; --count)
 		{
 			g_workers.push_back(worker(g_queue));
@@ -211,12 +211,12 @@ locc::result locc::process(std::deque<file> files)
 	auto residue = g_queue.clear();
 	g_queue.active(false);
 	g_workers.clear();
-	locc::log(cfg::test(cfg::flag::debug) && thread_count > 0, "  -- worker threads completed\n");
+	locc::log_if(cfg::test(cfg::flag::debug) && thread_count > 0, "  -- worker threads completed\n");
 	for (auto& task : residue)
 	{
 		task();
 	}
-	locc::log(cfg::test(cfg::flag::debug), "\n");
+	locc::log_if(cfg::test(cfg::flag::debug), "\n");
 	for (auto& [_, data] : ret.dist)
 	{
 		data.ratio.divide(data.counts.lines, ret.totals);

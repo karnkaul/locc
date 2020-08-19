@@ -61,7 +61,7 @@ inline std::array<column, (std::size_t)col::count_> g_columns = {
 
 struct settings final
 {
-	stdfs::path json = "locc_settings.json";
+	stdfs::path json_path = "locc_settings.json";
 	std::unordered_set<locc::ext> ext_passlist;
 	std::unordered_map<locc::ext, locc::id> ext_to_id;
 	std::unordered_set<std::string> skip_substrs = {"CMakeFiles", "CMakeCache.txt", ".vscode", ".vs", ".xcode"};
