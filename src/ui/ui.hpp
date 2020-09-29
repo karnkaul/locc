@@ -1,4 +1,5 @@
 #pragma once
+#include <str_format/str_format.hpp>
 #include <app/config.hpp>
 #include <app/file_list_generator.hpp>
 
@@ -17,29 +18,11 @@ std::stringstream& concat(std::stringstream& in);
 template <typename Arg, typename... Args>
 std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args);
 
-inline std::ostream& format(std::ostream& out, std::string_view fmt)
-{
-	out << fmt;
-	return out;
-}
-
-template <typename Arg, typename... Args>
-std::ostream& format(std::ostream& out, std::string_view fmt, Arg&& arg, Args&&... args)
-{
-	if (auto search = fmt.find("{}"); search != std::string::npos)
-	{
-		std::string_view text(fmt.data(), search);
-		out << text << std::forward<Arg>(arg);
-		return format(out, fmt.substr(search + 2), std::forward<Args>(args)...);
-	}
-	return format(out, fmt);
-}
-
 template <typename X, typename... Args>
 void xout(X& ostream, std::string_view fmt, Args&&... args)
 {
 	std::stringstream str;
-	format(str, fmt, std::forward<Args>(args)...);
+	kt::format_str(str, fmt, std::forward<Args>(args)...);
 	ostream << str.str();
 }
 
