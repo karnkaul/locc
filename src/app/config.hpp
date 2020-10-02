@@ -5,46 +5,23 @@
 #include <unordered_set>
 #include "common.hpp"
 
-namespace cfg
-{
-enum class flag
-{
-	blanks,
-	one_thread,
-	verbose,
-	debug,
-	quiet,
-	follow_symlinks,
-	count_
-};
+namespace cfg {
+enum class flag { blanks, one_thread, verbose, debug, quiet, follow_symlinks, count_ };
 
-enum class mode
-{
+enum class mode {
 	explt,
 	implt,
 };
 
-enum class col
-{
-	file,
-	code,
-	total,
-	comments,
-	files,
-	ratio,
-	count_
-};
+enum class col { file, code, total, comments, files, ratio, count_ };
 
-struct column final
-{
+struct column final {
 	std::string_view name;
 	bool reverse = false;
 
-	inline std::string ui_name() const
-	{
+	inline std::string ui_name() const {
 		std::string ret(name);
-		if (!ret.empty())
-		{
+		if (!ret.empty()) {
 			ret.at(0) = std::toupper(ret.at(0));
 		}
 		return ret;
@@ -59,8 +36,7 @@ inline constexpr std::array g_mode_names = {"explicit", "implicit"};
 inline std::array<column, (std::size_t)col::count_> g_columns = {
 	{{"file", true}, {"code", false}, {"total", false}, {"comments", false}, {"files", false}, {"ratio", false}}};
 
-struct settings final
-{
+struct settings final {
 	stdfs::path json_path = "locc_settings.json";
 	std::unordered_set<locc::ext> ext_passlist;
 	std::unordered_map<locc::ext, locc::id> ext_to_id;
@@ -110,13 +86,11 @@ struct settings final
 
 inline settings g_settings;
 
-inline void set(cfg::flag flag)
-{
+inline void set(cfg::flag flag) {
 	cfg::g_flags.set((std::size_t)flag);
 }
 
-inline bool test(cfg::flag flag)
-{
+inline bool test(cfg::flag flag) {
 	return cfg::g_flags.test((std::size_t)flag);
 }
 } // namespace cfg

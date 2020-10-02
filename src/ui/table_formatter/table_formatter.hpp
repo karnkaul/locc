@@ -7,13 +7,10 @@
 #include <utility>
 #include <variant>
 
-namespace kt
-{
-class table_formatter final
-{
-public:
-	struct cell final
-	{
+namespace kt {
+class table_formatter final {
+  public:
+	struct cell final {
 		std::string text;
 		std::variant<std::uint64_t, std::int64_t, double, bool> number;
 	};
@@ -21,8 +18,7 @@ public:
 	using row = std::deque<cell>;
 	using fill = std::pair<char, std::uint16_t>;
 
-	struct info final
-	{
+	struct info final {
 		std::string col_separator = "|";
 		fill row_prefix = {' ', 1};
 		char col_pad = ' ';
@@ -31,26 +27,24 @@ public:
 		bool show_header_separator = true;
 	};
 
-public:
+  public:
 	info m_info;
 
-private:
-	struct col final
-	{
+  private:
+	struct col final {
 		std::string header;
 		std::uint8_t width = 0;
 		std::uint8_t precision = 3;
 		bool left_aligned = false;
 	};
 
-	struct
-	{
+	struct {
 		std::deque<col> cols;
 		std::deque<row> rows;
 		std::size_t write_head = 0;
 	} m_data;
 
-public:
+  public:
 	std::int8_t add_column(std::string header, bool left_aligned = false, std::uint8_t precision = 3);
 
 	template <typename Arg, typename... Args>
@@ -61,7 +55,7 @@ public:
 
 	std::string to_string() const;
 
-private:
+  private:
 	template <typename T>
 	void add_cell(T&& arg);
 
@@ -77,10 +71,8 @@ private:
 std::ostream& operator<<(std::ostream& out_str, table_formatter::fill const& fill);
 
 template <typename Arg, typename... Args>
-void table_formatter::add_row(Arg&& arg, Args&&... args)
-{
-	if (m_data.cols.empty())
-	{
+void table_formatter::add_row(Arg&& arg, Args&&... args) {
+	if (m_data.cols.empty()) {
 		m_data.cols.push_back({});
 	}
 	m_data.rows.push_back({});
@@ -89,47 +81,33 @@ void table_formatter::add_row(Arg&& arg, Args&&... args)
 }
 
 template <typename T>
-void table_formatter::add_cell(T&& arg)
-{
-	if (m_data.write_head >= m_data.cols.size())
-	{
+void table_formatter::add_cell(T&& arg) {
+	if (m_data.write_head >= m_data.cols.size()) {
 		return;
 	}
 	auto& row = m_data.rows.back();
 	auto& col = m_data.cols.at(m_data.write_head);
-	while (m_data.write_head >= row.size())
-	{
+	while (m_data.write_head >= row.size()) {
 		row.push_back({});
 	}
 	auto& cell = row.at(m_data.write_head++);
-	if constexpr (std::is_integral_v<std::decay_t<T>>)
-	{
+	if constexpr (std::is_integral_v<std::decay_t<T>>) {
 		cell.text = std::to_string(arg);
-		if constexpr (std::is_unsigned_v<std::decay_t<T>>)
-		{
+		if constexpr (std::is_unsigned_v<std::decay_t<T>>) {
 			cell.number = (std::uint64_t)arg;
-		}
-		else
-		{
+		} else {
 			cell.number = (std::int64_t)arg;
 		}
-	}
-	else if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
-	{
+	} else if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
 		cell.text = std::forward<T>(arg);
 		cell.number = false;
-	}
-	else
-	{
+	} else {
 		std::stringstream str;
 		str.precision(col.precision);
-		if constexpr (std::is_floating_point_v<std::decay_t<T>>)
-		{
+		if constexpr (std::is_floating_point_v<std::decay_t<T>>) {
 			str << std::fixed << arg;
 			cell.number = (double)arg;
-		}
-		else
-		{
+		} else {
 			str << arg;
 			cell.number = false;
 		}
@@ -139,11 +117,9 @@ void table_formatter::add_cell(T&& arg)
 }
 
 template <typename Arg, typename... Args>
-void table_formatter::add_row_impl(Arg&& arg, Args&&... args)
-{
+void table_formatter::add_row_impl(Arg&& arg, Args&&... args) {
 	add_cell<Arg>(std::forward<Arg>(arg));
-	if constexpr (sizeof...(args) > 0)
-	{
+	if constexpr (sizeof...(args) > 0) {
 		add_row_impl<Args...>(std::forward<Args>(args)...);
 	}
 }
