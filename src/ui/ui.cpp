@@ -1,11 +1,11 @@
-#include "ui.hpp"
 #include <app/config.hpp>
 #include <build_version.hpp>
-#include "table_formatter/table_formatter.hpp"
+#include <ui/table_formatter/table_formatter.hpp>
+#include <ui/ui.hpp>
 
 namespace {
 template <typename F>
-void parse_values(locc::parser::value_view values, F f) {
+void parse_values(std::string_view values, F f) {
 	while (!values.empty()) {
 		std::size_t const comma = values.find(',');
 		if (comma > 0 && comma != locc::null_index) {
@@ -21,65 +21,90 @@ void parse_values(locc::parser::value_view values, F f) {
 }
 } // namespace
 
-bool locc::parse_options(locc::parser::key const& key, locc::parser::value value) {
-	if (match_any(key, "skip-substr")) {
-		parse_values(value, [](auto v) { cfg::g_settings.skip_substrs.insert(std::string(v)); });
-		return true;
-	} else if (match_any(key, "e", "extensions")) {
-		parse_values(value, [](auto v) {
-			if (v.at(0) == '.') {
-				cfg::g_settings.ext_passlist.insert(std::string(v));
-			}
-		});
-		return true;
-	} else if (match_any(key, "sort-by")) {
-		for (std::size_t i = 0; i < cfg::g_columns.size(); ++i) {
-			if (std::string_view(value) == cfg::g_columns.at(i).name) {
-				cfg::g_sort_by = (cfg::col)i;
-				break;
+clap::interpreter::spec_t::main_t locc::options_cmd() {
+	using spec_t = clap::interpreter::spec_t;
+	spec_t::main_t ret;
+	spec_t::opt_t opt;
+	opt.id = "skip-substr";
+	opt.description = "Path substrings to skip (comma separated)";
+	opt.value_fmt = "<substr>[,<substr>...]";
+	ret.options.push_back(std::move(opt));
+	opt.id = "extensions";
+	opt.description = "Additional extensions to track";
+	opt.value_fmt = "<ext>[,<ext>...]";
+	ret.options.push_back(std::move(opt));
+	opt.id = "sort-by";
+	opt.description = "Sort by";
+	opt.value_fmt = "[Column-Name]";
+	ret.options.push_back(std::move(opt));
+	opt.id = "blanks";
+	opt.description = "Show column counting blank lines";
+	opt.value_fmt.clear();
+	ret.options.push_back(std::move(opt));
+	opt.id = "one-thread";
+	opt.description = "Restrict program to a single thread";
+	ret.options.push_back(std::move(opt));
+	opt.id = "skip-symlinks";
+	opt.description = "Skip symlinks";
+	ret.options.push_back(std::move(opt));
+	opt.id = "quiet";
+	opt.description = "Quiet mode";
+	ret.options.push_back(std::move(opt));
+	opt.id = "verbose";
+	opt.description = "Verbose mode";
+	ret.options.push_back(std::move(opt));
+	opt.id = "debug";
+	opt.description = "Debug mode";
+	ret.options.push_back(std::move(opt));
+	ret.callback = [](clap::interpreter::params_t const& params) {
+		if (auto val = params.opt_value("skip-substr")) {
+			parse_values(*val, [](auto v) { cfg::g_settings.skip_substrs.insert(std::string(v)); });
+		}
+		if (auto val = params.opt_value("extensions")) {
+			parse_values(*val, [](auto v) {
+				if (!v.empty() && v[0] == '.') {
+					cfg::g_settings.ext_passlist.insert(std::string(v));
+				}
+			});
+		}
+		if (auto val = params.opt_value("sort-by")) {
+			for (std::size_t i = 0; i < cfg::g_columns.size(); ++i) {
+				if (*val == cfg::g_columns.at(i).name) {
+					cfg::g_sort_by = static_cast<cfg::col>(i);
+					break;
+				}
 			}
 		}
-		return true;
-	} else if (match_any(key, "b", "blanks")) {
-		cfg::set(cfg::flag::blanks);
-		return true;
-	} else if (match_any(key, "o", "one-thread")) {
-		cfg::set(cfg::flag::one_thread);
-		return true;
-	} else if (match_any(key, "v", "verbose")) {
-		cfg::set(cfg::flag::verbose);
-		return true;
-	} else if (match_any(key, "d", "debug")) {
-		cfg::set(cfg::flag::debug);
-		return true;
-	} else if (match_any(key, "q", "quiet")) {
-		cfg::set(cfg::flag::quiet);
-		return true;
-	} else if (match_any(key, "s", "symlinks")) {
-		cfg::set(cfg::flag::follow_symlinks);
-		return true;
-	} else if (match_any(key, "settings")) {
-		cfg::g_settings.json_path = std::move(value);
-		return true;
-	}
-	if (cfg::g_settings.json_path.empty()) {
-		cfg::g_settings.json_path = "locc_settings.json";
-	}
-	if (cfg::g_settings.import()) {
-		locc::log_if(cfg::test(cfg::flag::verbose), "\nImported config from [{}]", cfg::g_settings.json_path.generic_string());
-	}
-	return false;
+		if (params.opt_value("blanks")) {
+			cfg::set(cfg::flag::blanks);
+		}
+		if (params.opt_value("one-thread")) {
+			cfg::set(cfg::flag::one_thread);
+		}
+		if (params.opt_value("skip-symlinks")) {
+			cfg::set(cfg::flag::skip_symlinks);
+		}
+		if (params.opt_value("quiet")) {
+			cfg::set(cfg::flag::quiet);
+		}
+		if (params.opt_value("verbose")) {
+			cfg::set(cfg::flag::verbose);
+		}
+		if (params.opt_value("debug")) {
+			cfg::set(cfg::flag::debug);
+		}
+	};
+	return ret;
 }
 
 void locc::print_debug_prologue() {
 	log_if(true, "\n  -- flags:");
 	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i) {
-		log_if(true, "{}, {}", cfg::test((cfg::flag)i), cfg::g_flag_names.at(i));
+		log_if(true, "{} = {}, ", cfg::g_flag_names.at(i), cfg::test((cfg::flag)i));
 	}
 	if (cfg::g_flags.none()) {
 		log_if(true, " [none]");
 	}
-	log_if(true, "\n  -- mode: {}", cfg::g_mode_names.at((std::size_t)cfg::g_mode));
 	log_if(true, "\n  -- sort-by: {}", cfg::g_columns.at((std::size_t)cfg::g_sort_by).name);
 	log_if(true, "\n\n");
 }

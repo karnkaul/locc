@@ -1,9 +1,9 @@
 #pragma once
-#include <deque>
+#include <vector>
 #include <app/common.hpp>
 
 namespace locc {
 struct result;
 
-result process(std::deque<locc::file> files);
+result process(std::vector<locc::file> files);
 } // namespace locc

@@ -1,7 +1,7 @@
-#include "table_formatter.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <vector>
+#include <ui/table_formatter/table_formatter.hpp>
 
 namespace kt {
 std::ostream& operator<<(std::ostream& out_str, table_formatter::fill const& fill) {
@@ -48,7 +48,7 @@ void table_formatter::clear() {
 }
 
 bool table_formatter::sort(std::uint8_t col_index, bool descending) {
-	if (col_index >= 0 && col_index < (std::int8_t)m_data.cols.size()) {
+	if (col_index < (std::int8_t)m_data.cols.size()) {
 		std::vector<row> rows;
 		rows.reserve(m_data.rows.size());
 		std::move(m_data.rows.begin(), m_data.rows.end(), std::back_inserter(rows));

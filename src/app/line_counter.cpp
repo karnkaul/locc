@@ -1,4 +1,3 @@
-#include "line_counter.hpp"
 #include <cctype>
 #include <fstream>
 #include <functional>
@@ -7,6 +6,7 @@
 #include <string>
 #include <thread>
 #include <app/config.hpp>
+#include <app/line_counter.hpp>
 #include <kt/async_queue/async_queue.hpp>
 #include <ui/ui.hpp>
 
@@ -122,7 +122,7 @@ void count_lines(locc::file& out_file) {
 }
 } // namespace
 
-locc::result locc::process(std::deque<file> files) {
+locc::result locc::process(std::vector<file> files) {
 	result ret;
 	if (files.empty()) {
 		return ret;

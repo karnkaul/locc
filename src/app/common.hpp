@@ -12,10 +12,10 @@ namespace locc {
 template <typename T>
 using pair_t = std::pair<T, T>;
 
-using path = stdfs::path;
-using ext = std::string;
+using path_t = stdfs::path;
+using ext_t = std::string;
 using ext_group = std::string;
-using id = std::string;
+using id_t = std::string;
 
 using comment_line = std::string;
 using comment_block = pair_t<std::string>;
@@ -32,7 +32,7 @@ struct comment_info final {
 
 constexpr std::size_t null_index = std::string::npos;
 
-template <typename T>
+template <typename T = std::size_t>
 struct lines_t {
 	T code = {};
 	T comments = {};
@@ -52,39 +52,37 @@ struct lines_t {
 	}
 };
 
-template <typename T>
+template <typename T = std::size_t>
 struct lines_blank_t : lines_t<T> {
 	T blank = {};
 };
 
-using lines = lines_t<std::size_t>;
-using lines_blank = lines_blank_t<std::size_t>;
-using ratio = lines_t<float>;
+using ratio_t = lines_t<float>;
 
 struct file final {
-	path path;
-	ext ext;
-	id id;
-	lines_blank lines;
+	path_t path;
+	ext_t ext;
+	id_t id;
+	lines_blank_t<> lines;
 };
 
 struct result final {
 	struct file_stats {
 		struct {
-			lines lines;
+			lines_t<> lines;
 			std::size_t files = {};
 		} counts;
-		ratio ratio;
+		ratio_t ratio;
 	};
-	using distribution = std::unordered_map<id, file_stats>;
+	using distribution = std::unordered_map<id_t, file_stats>;
 
 	distribution dist;
 	std::deque<file> files;
-	lines totals;
+	lines_t<> totals;
 
 	template <template <typename...> typename Cont = std::map, typename Pred, typename... Args>
 	auto transform_dist(Pred predicate) const {
-		Cont<id, file_stats, Args...> ret;
+		Cont<id_t, file_stats, Args...> ret;
 		for (auto const& [ext, data] : dist) {
 			if (predicate(ext, data)) {
 				ret.emplace(ext, data);

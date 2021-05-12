@@ -1,12 +1,14 @@
 #pragma once
 #include <app/config.hpp>
 #include <app/file_list_generator.hpp>
-#include <str_format/str_format.hpp>
+#include <clap/interpreter.hpp>
+#include <kt/str_format/str_format.hpp>
 
 namespace locc {
 struct result;
 
-bool parse_options(parser::key const& key, parser::value value);
+clap::interpreter::spec_t::main_t options_cmd();
+
 void print_debug_prologue();
 void print(result const& result);
 void print_help();
