@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(LOCC_VERSION "0.0.4" CACHE STRING "Application Version" FORCE)
+set(LOCC_VERSION "0.0.5" CACHE STRING "Application Version" FORCE)
 project(locc VERSION ${LOCC_VERSION})
 
 find_package(Git QUIET)

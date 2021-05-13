@@ -1,9 +1,9 @@
 #pragma once
-#include <vector>
+#include <span>
 #include <app/common.hpp>
 
 namespace locc {
 struct result;
 
-result process(std::vector<locc::file> files);
+result process(std::span<locc::file> files);
 } // namespace locc

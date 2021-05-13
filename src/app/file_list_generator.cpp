@@ -7,28 +7,28 @@
 namespace {
 std::optional<locc::file> include_file(stdfs::path const& path) {
 	if (!stdfs::is_regular_file(stdfs::absolute(path))) {
-		return {};
+		return std::nullopt;
 	}
 	if (path.generic_string().find(".git/") != std::string::npos) {
-		return {};
+		return std::nullopt;
 	}
 	auto const filename = path.filename().generic_string();
 	if (cfg::g_settings.filenames_as_ext.find(filename) != cfg::g_settings.filenames_as_ext.end()) {
-		return locc::file{path, filename, cfg::g_settings.get_id(filename), {}};
+		return locc::file{.path = path, .ext = filename, .id = cfg::g_settings.get_id(filename)};
 	}
 	auto const ext = path.extension().generic_string();
 	if (ext.empty()) {
-		return {};
+		return std::nullopt;
 	}
-	if (std::none_of(cfg::g_settings.ext_passlist.begin(), cfg::g_settings.ext_passlist.end(), [&ext](auto skip) -> bool { return skip == ext; })) {
-		return {};
+	if (std::none_of(cfg::g_settings.ext_passlist.begin(), cfg::g_settings.ext_passlist.end(), [&ext](auto skip) { return skip == ext; })) {
+		return std::nullopt;
 	}
 	auto const& skip = cfg::g_settings.skip_substrs;
 	auto const path_str = path.generic_string();
 	if (std::any_of(skip.begin(), skip.end(), [&path_str](auto const& skip) { return path_str.find(skip) < path_str.size(); })) {
-		return {};
+		return std::nullopt;
 	}
-	return locc::file{path, ext, cfg::g_settings.get_id(ext), {}};
+	return locc::file{.path = path, .ext = ext, .id = cfg::g_settings.get_id(ext)};
 }
 } // namespace
 

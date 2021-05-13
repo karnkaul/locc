@@ -2,7 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/056xjwjht5fwxf4n?svg=true)](https://ci.appveyor.com/project/karnkaul/locc)
 
-This is a hobby application designed to count lines of code given a list of files or a directory.
+`locc` prints a small report summarising the counts of lines of code, given a root directory.
 
 ### Usage
 

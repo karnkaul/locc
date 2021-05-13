@@ -21,11 +21,6 @@ using id_t = std::string;
 using comment_line = std::string;
 using comment_block = pair_t<std::string>;
 
-template <typename T, typename... Ts>
-bool match_any(T const& lhs, Ts const&... rhs) {
-	return (... || (lhs == rhs));
-}
-
 struct comment_info final {
 	std::deque<comment_line> comment_lines;
 	std::deque<comment_block> comment_blocks;

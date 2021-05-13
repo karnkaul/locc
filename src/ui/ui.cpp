@@ -1,3 +1,4 @@
+#include <concepts>
 #include <app/config.hpp>
 #include <build_version.hpp>
 #include <ui/table_formatter/table_formatter.hpp>
@@ -5,6 +6,7 @@
 
 namespace {
 template <typename F>
+requires std::invocable<F, std::string_view>
 void parse_values(std::string_view values, F f) {
 	while (!values.empty()) {
 		std::size_t const comma = values.find(',');

@@ -122,7 +122,7 @@ void count_lines(locc::file& out_file) {
 }
 } // namespace
 
-locc::result locc::process(std::vector<file> files) {
+locc::result locc::process(std::span<file> files) {
 	result ret;
 	if (files.empty()) {
 		return ret;

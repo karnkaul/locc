@@ -5,6 +5,7 @@
 #include <app/config.hpp>
 #include <app/file_list_generator.hpp>
 #include <app/line_counter.hpp>
+#include <build_version.hpp>
 #include <clap/interpreter.hpp>
 #include <ui/ui.hpp>
 
@@ -30,7 +31,7 @@ void prep_options() {
 	}
 }
 
-void run_loc(std::vector<locc::file> files) {
+void run_loc(std::span<locc::file> files) {
 	for (auto const& [group, exts] : cfg::g_settings.ext_groups) {
 		if (auto search = cfg::g_settings.comment_infos.find(group); search != cfg::g_settings.comment_infos.end()) {
 			for (auto const& ext : exts) {
@@ -38,22 +39,26 @@ void run_loc(std::vector<locc::file> files) {
 			}
 		}
 	}
-	auto result = locc::process(std::move(files));
+	auto result = locc::process(files);
 	locc::print(result);
 }
 } // namespace
 
 int main(int argc, char** argv) {
 	clap::interpreter interpreter;
+	interpreter.m_command = false;
 	auto const expr = interpreter.parse(argc, argv);
 	using spec_t = clap::interpreter::spec_t;
 	spec_t spec;
 	spec.main = locc::options_cmd();
+	spec.main.exe = stdfs::path(argv[0]).filename().string();
+	spec.main.version = locc::g_version;
 	auto const result = interpreter.interpret(std::cout, std::move(spec), expr);
-	if (result == decltype(result)::quit || expr.command.id.empty()) {
+	if (result == decltype(result)::quit || expr.arguments.empty()) {
 		return 0;
 	}
 	prep_options();
 	locc::do_if(cfg::test(cfg::flag::debug), &locc::print_debug_prologue);
-	run_loc(locc::file_list(expr.command.id));
+	auto files = locc::file_list(expr.arguments.front());
+	run_loc(files);
 }
