@@ -1,4 +1,5 @@
 #pragma once
+#include <concepts>
 #include <deque>
 #include <filesystem>
 #include <iostream>
@@ -33,6 +34,7 @@ struct comment_info final {
 constexpr std::size_t null_index = std::string::npos;
 
 template <typename T = std::size_t>
+requires std::integral<T> || std::floating_point<T>
 struct lines_t {
 	T code = {};
 	T comments = {};

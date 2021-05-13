@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(LOCC_VERSION "0.0.4" CACHE STRING "Application Version" FORCE)
 project(locc VERSION ${LOCC_VERSION})
@@ -45,7 +46,7 @@ source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}" FILES "${OUTFILE}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml.in" "${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml")
 
 add_executable(locc ${SOURCES})
-target_compile_features(locc PUBLIC cxx_std_17)
+target_compile_features(locc PUBLIC cxx_std_20)
 target_include_directories(locc PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/src")
 target_link_libraries(locc PRIVATE clap::clap)
 

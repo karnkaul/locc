@@ -11,7 +11,10 @@ configuration:
   - Release
 install:
   - cmd: cmake -G "Visual Studio 16 2019" .
-  - sh: cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
+  - sh: |
+      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      sudo apt -qq update -y && sudo apt -qq install -y gcc-10 g++-10
+      cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
 for:
   - matrix:
       only:
