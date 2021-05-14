@@ -29,14 +29,14 @@ for:
       only:
         - job_name: Linux x64
     build_script:
-      - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && ninja -v || exit 1
+      - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && cmake --build . -v || exit 1
     artifacts:
       - path: locc-v@LOCC_VERSION@-Linux-x64.tar.gz
 test_script:
   - cmd: |
       .\Release\locc.exe -dbv . || exit 1
       .\Release\locc.exe --version || exit 1
-  - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1
+  - sh: ./locc -db --verbose . || exit 1; ./locc --version || exit 1
 after_build:
   - cmd: 7z a locc-v@LOCC_VERSION@-Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
   - sh: tar -caf locc-v@LOCC_VERSION@-Linux-x64.tar.gz locc

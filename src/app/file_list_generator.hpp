@@ -6,5 +6,5 @@
 namespace locc {
 namespace stdfs = std::filesystem;
 
-std::vector<file> file_list(stdfs::path const& root);
+std::vector<file_t> file_list(stdfs::path const& root);
 } // namespace locc

@@ -43,9 +43,7 @@ std::uint16_t table_formatter::table_width() const {
 	return tw;
 }
 
-void table_formatter::clear() {
-	m_data = {};
-}
+void table_formatter::clear() { m_data = {}; }
 
 bool table_formatter::sort(std::uint8_t col_index, bool descending) {
 	if (col_index < (std::int8_t)m_data.cols.size()) {

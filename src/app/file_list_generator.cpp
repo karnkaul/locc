@@ -5,7 +5,7 @@
 #include <ui/ui.hpp>
 
 namespace {
-std::optional<locc::file> include_file(stdfs::path const& path) {
+std::optional<locc::file_t> include_file(stdfs::path const& path) {
 	if (!stdfs::is_regular_file(stdfs::absolute(path))) {
 		return std::nullopt;
 	}
@@ -14,7 +14,7 @@ std::optional<locc::file> include_file(stdfs::path const& path) {
 	}
 	auto const filename = path.filename().generic_string();
 	if (cfg::g_settings.filenames_as_ext.find(filename) != cfg::g_settings.filenames_as_ext.end()) {
-		return locc::file{.path = path, .ext = filename, .id = cfg::g_settings.get_id(filename)};
+		return locc::file_t{.path = path, .ext = filename, .id = cfg::g_settings.get_id(filename), .lines = {}};
 	}
 	auto const ext = path.extension().generic_string();
 	if (ext.empty()) {
@@ -28,12 +28,12 @@ std::optional<locc::file> include_file(stdfs::path const& path) {
 	if (std::any_of(skip.begin(), skip.end(), [&path_str](auto const& skip) { return path_str.find(skip) < path_str.size(); })) {
 		return std::nullopt;
 	}
-	return locc::file{.path = path, .ext = ext, .id = cfg::g_settings.get_id(ext)};
+	return locc::file_t{.path = path, .ext = ext, .id = cfg::g_settings.get_id(ext), .lines = {}};
 }
 } // namespace
 
-std::vector<locc::file> locc::file_list(stdfs::path const& root) {
-	std::vector<locc::file> ret;
+std::vector<locc::file_t> locc::file_list(stdfs::path const& root) {
+	std::vector<locc::file_t> ret;
 	ret.reserve(1024 * 1024);
 	if (stdfs::is_directory(root)) {
 		for (auto const& it : stdfs::recursive_directory_iterator(root, stdfs::directory_options::skip_permission_denied)) {

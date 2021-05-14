@@ -94,7 +94,7 @@ Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
  ----------------------------------------------
  | loc     | 4786KiB |  758.000ms (+/-19.7ms) |
  | scc     | 4561KiB | 1135.667ms (+/-6.7ms)  |
- | locc    |  298KiB |  830.667ms (+/-4.7ms)  |
+ | locc    |  298KiB |  724.136ms (+/-4.7ms)  |
 ```
 
 ### Options
@@ -107,12 +107,10 @@ Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
 - `-o` / `--one-thread`: Run everything on the main thread
 - `-b` / `--blanks`: Include blank lines as lines of code
 - `-q` / `--quiet`: Print nothing but total lines of code
-- `-v` / `--verbose`: Lots of output
+- `--verbose`: Lots of output
 - `-d` / `--debug`: Misc debug output
 - `-h` / `--help`: Print help
 - `--version`: Print version
-
-> _More switches and a data driven approach are in development._
 
 ### Building
 
@@ -124,4 +122,4 @@ Requirements:
 
 ### Contributing
 
-WIP
+Pull/merge requests are welcome.

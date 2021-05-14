@@ -78,11 +78,7 @@ struct settings final {
 
 inline settings g_settings;
 
-inline void set(cfg::flag flag) {
-	cfg::g_flags.set((std::size_t)flag);
-}
+inline void set(cfg::flag flag) { cfg::g_flags.set((std::size_t)flag); }
 
-inline bool test(cfg::flag flag) {
-	return cfg::g_flags.test((std::size_t)flag);
-}
+inline bool test(cfg::flag flag) { return cfg::g_flags.test((std::size_t)flag); }
 } // namespace cfg

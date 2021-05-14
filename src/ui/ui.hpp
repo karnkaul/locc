@@ -5,12 +5,12 @@
 #include <kt/str_format/str_format.hpp>
 
 namespace locc {
-struct result;
+struct result_t;
 
 clap::interpreter::spec_t::main_t options_cmd();
 
 void print_debug_prologue();
-void print(result const& result);
+void print(result_t const& result);
 void print_help();
 void print_version();
 
@@ -20,7 +20,9 @@ template <typename Arg, typename... Args>
 std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args);
 
 template <typename X, typename... Args>
-requires requires(X x) { x << std::declval<std::string>(); }
+requires requires(X x) {
+	x << std::declval<std::string>();
+}
 void xout(X& ostream, std::string_view fmt, Args&&... args) {
 	std::stringstream str;
 	kt::format_str(str, fmt, std::forward<Args>(args)...);

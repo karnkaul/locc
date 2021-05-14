@@ -29,8 +29,7 @@ struct comment_info final {
 constexpr std::size_t null_index = std::string::npos;
 
 template <typename T = std::size_t>
-requires std::integral<T> || std::floating_point<T>
-struct lines_t {
+	requires std::integral<T> || std::floating_point<T> struct lines_t {
 	T code = {};
 	T comments = {};
 	T total = {};
@@ -56,14 +55,14 @@ struct lines_blank_t : lines_t<T> {
 
 using ratio_t = lines_t<float>;
 
-struct file final {
+struct file_t final {
 	path_t path;
 	ext_t ext;
 	id_t id;
 	lines_blank_t<> lines;
 };
 
-struct result final {
+struct result_t final {
 	struct file_stats {
 		struct {
 			lines_t<> lines;
@@ -74,7 +73,7 @@ struct result final {
 	using distribution = std::unordered_map<id_t, file_stats>;
 
 	distribution dist;
-	std::deque<file> files;
+	std::deque<file_t> files;
 	lines_t<> totals;
 
 	template <template <typename...> typename Cont = std::map, typename Pred, typename... Args>

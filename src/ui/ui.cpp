@@ -111,7 +111,7 @@ void locc::print_debug_prologue() {
 	log_if(true, "\n\n");
 }
 
-void locc::print(locc::result const& result) {
+void locc::print(locc::result_t const& result) {
 	if (result.totals.code > 0 || cfg::test(cfg::flag::verbose)) {
 		kt::table_formatter tf;
 		if (cfg::test(cfg::flag::verbose)) {
@@ -131,7 +131,7 @@ void locc::print(locc::result const& result) {
 			for (auto const& column : cfg::g_columns) {
 				tf.add_column(column.ui_name(), column.reverse);
 			}
-			locc::result::file_stats total;
+			locc::result_t::file_stats total;
 			for (auto const& [id, data] : dist) {
 				tf.add_row(id, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.counts.files, data.ratio.code);
 				total.counts.lines.add(data.counts.lines);
@@ -147,10 +147,6 @@ void locc::print(locc::result const& result) {
 	}
 }
 
-void locc::print_help() {
-	log_force("\n == TODO (Help Summary) == \n\n");
-}
+void locc::print_help() { log_force("\n == TODO (Help Summary) == \n\n"); }
 
-void locc::print_version() {
-	log_force(g_version, "\n(", g_git_commit_hash, ")\n");
-}
+void locc::print_version() { log_force(g_version, "\n(", g_git_commit_hash, ")\n"); }

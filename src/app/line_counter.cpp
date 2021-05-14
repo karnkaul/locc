@@ -17,7 +17,7 @@ struct worker final {
 	std::thread thread;
 
 	worker() = default;
-	worker(async_queue& out_queue) {
+	explicit worker(async_queue& out_queue) {
 		thread = std::thread([this, &out_queue]() { work(out_queue); });
 	}
 	worker(worker&&) = default;
@@ -39,7 +39,7 @@ struct worker final {
 };
 
 async_queue g_queue;
-std::deque<worker> g_workers;
+std::vector<worker> g_workers;
 } // namespace
 
 namespace {
@@ -80,8 +80,8 @@ void trim_leading_comment_blocks(locc::comment_info const& info, locc::comment_b
 	}
 	return;
 }
-
-void count_line(locc::comment_info const& info, locc::file& out_file, locc::comment_block const* open_block, std::string_view line) {
+// test
+void count_line(locc::comment_info const& info, locc::file_t& out_file, locc::comment_block const* open_block, std::string_view line) {
 	++out_file.lines.total;
 	if (cfg::test(cfg::flag::debug) && g_DEBUG_skip_to_line == out_file.lines.total) {
 		;
@@ -108,7 +108,7 @@ void count_line(locc::comment_info const& info, locc::file& out_file, locc::comm
 	}
 }
 
-void count_lines(locc::file& out_file) {
+void count_lines(locc::file_t& out_file) {
 	std::ifstream f(stdfs::absolute(out_file.path), std::ios::in);
 	if (f.good()) {
 		out_file.lines.code = out_file.lines.total = 1;
@@ -122,32 +122,10 @@ void count_lines(locc::file& out_file) {
 }
 } // namespace
 
-locc::result locc::process(std::span<file> files) {
-	result ret;
-	if (files.empty()) {
-		return ret;
-	}
-	kt::lockable mutex;
-	bool const blanks = cfg::test(cfg::flag::blanks);
-	auto process_file = [&ret, &mutex, blanks](auto iter) {
-		auto& file = *iter;
-		count_lines(file);
-		auto lock = mutex.lock();
-		ret.totals.total += file.lines.total;
-		ret.totals.code += file.lines.code;
-		auto& data = ret.dist[file.id];
-		++data.counts.files;
-		if (blanks) {
-			ret.totals.code += file.lines.blank;
-			data.counts.lines.code += file.lines.blank;
-		}
-		data.counts.lines.code += file.lines.code;
-		data.counts.lines.comments += file.lines.comments;
-		data.counts.lines.total += file.lines.total;
-		ret.files.push_back(std::move(file));
-	};
-	locc::log_if(cfg::test(cfg::flag::debug), "  -- parsing {} files\n", files.size());
-	int thread_count = cfg::test(cfg::flag::one_thread) ? 0 : (int)std::min((std::size_t)std::thread::hardware_concurrency() - 1, files.size() - 1);
+namespace locc {
+counter_t::counter_t(result_t* result) : m_result(result) {
+	assert(m_result != nullptr && "required parameter null");
+	int const thread_count = cfg::test(cfg::flag::one_thread) ? 0 : std::thread::hardware_concurrency() - 1;
 	g_workers.clear();
 	if (thread_count > 0) {
 		locc::log_if(cfg::test(cfg::flag::debug), "  -- launching {} worker threads\n", thread_count);
@@ -155,23 +133,45 @@ locc::result locc::process(std::span<file> files) {
 			g_workers.push_back(worker(g_queue));
 		}
 	}
-	for (auto iter = files.begin(); iter != files.end(); ++iter) {
-		g_queue.push([iter, process_file]() { process_file(iter); });
-	}
-	while (!g_queue.empty()) {
-		auto task = g_queue.pop();
-		(*task)();
-	}
+}
+
+counter_t::~counter_t() {
 	auto residue = g_queue.clear();
 	g_queue.active(false);
+	bool const threads = !g_workers.empty();
 	g_workers.clear();
-	locc::log_if(cfg::test(cfg::flag::debug) && thread_count > 0, "  -- worker threads completed\n");
+	locc::log_if(cfg::test(cfg::flag::debug) && threads, "  -- worker threads completed\n");
 	for (auto& task : residue) {
 		task();
 	}
 	locc::log_if(cfg::test(cfg::flag::debug), "\n");
-	for (auto& [_, data] : ret.dist) {
-		data.ratio.divide(data.counts.lines, ret.totals);
+	for (auto& [_, data] : m_result->dist) {
+		data.ratio.divide(data.counts.lines, m_result->totals);
 	}
-	return ret;
 }
+
+void counter_t::count(file_t file, bool blanks) {
+	if (g_workers.empty()) {
+		count_impl(std::move(file), blanks);
+	} else {
+		g_queue.push([this, f = std::move(file), blanks]() { count_impl(std::move(f), blanks); });
+	}
+}
+
+void counter_t::count_impl(file_t file, bool blanks) {
+	count_lines(file);
+	auto lock = m_mutex.lock();
+	m_result->totals.total += file.lines.total;
+	m_result->totals.code += file.lines.code;
+	auto& data = m_result->dist[file.id];
+	++data.counts.files;
+	if (blanks) {
+		m_result->totals.code += file.lines.blank;
+		data.counts.lines.code += file.lines.blank;
+	}
+	data.counts.lines.code += file.lines.code;
+	data.counts.lines.comments += file.lines.comments;
+	data.counts.lines.total += file.lines.total;
+	m_result->files.push_back(std::move(file));
+}
+} // namespace locc
