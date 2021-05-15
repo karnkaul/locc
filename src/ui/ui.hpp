@@ -1,14 +1,15 @@
 #pragma once
 #include <app/config.hpp>
-#include <app/file_list_generator.hpp>
+#include <clap/interpreter.hpp>
+#include <kt/str_format/str_format.hpp>
 
-namespace locc
-{
-struct result;
+namespace locc {
+struct result_t;
 
-bool parse_options(parser::key const& key, parser::value value);
+clap::interpreter::spec_t::main_t options_cmd();
+
 void print_debug_prologue();
-void print(result const& result);
+void print(result_t const& result);
 void print_help();
 void print_version();
 
@@ -18,102 +19,42 @@ template <typename Arg, typename... Args>
 std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args);
 
 template <typename X, typename... Args>
-void xout([[maybe_unused]] X& ostream, [[maybe_unused]] Args&&... args);
-
-template <typename... Args>
-void log([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args);
-
-template <typename... Args>
-void err([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args);
-
-template <typename... Args>
-void log(Args&&... args);
-
-template <typename... Args>
-void err(Args&&... args);
-
-template <typename... Args>
-void log_force(Args&&... args);
-
-template <typename F, typename... Args>
-void do_if(bool predicate, F f, Args&&...);
-
-template <typename Pred, typename F, typename... Args>
-void do_if(Pred predicate, F f, Args&&...);
-
-inline std::stringstream& concat(std::stringstream& in)
-{
-	return in;
+requires requires(X x) { x << std::declval<std::string>(); }
+void xout(X& ostream, std::string_view fmt, Args&&... args) {
+	std::stringstream str;
+	kt::format_str(str, fmt, std::forward<Args>(args)...);
+	ostream << str.str();
 }
 
-template <typename Arg, typename... Args>
-std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args)
-{
-	in << std::forward<Arg>(arg);
-	return concat(in, std::forward<Args>(args)...);
-}
-
-template <typename X, typename... Args>
-void xout([[maybe_unused]] X& ostream, [[maybe_unused]] Args&&... args)
-{
-	if constexpr (sizeof...(args) > 0)
-	{
-		std::stringstream str;
-		concat(str, std::forward<Args>(args)...);
-		ostream << str.str();
+template <typename... Args>
+void log_if(bool predicate, std::string_view fmt, Args&&... args) {
+	if (predicate && !cfg::test(cfg::flag::quiet)) {
+		xout(std::cout, fmt, std::forward<Args>(args)...);
 	}
 }
 
 template <typename... Args>
-void log([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args)
-{
-	if (predicate && !cfg::test(cfg::flag::quiet))
-	{
-		xout(std::cout, std::forward<Args>(args)...);
+void err_if(bool predicate, std::string_view fmt, Args&&... args) {
+	if (predicate && !cfg::test(cfg::flag::quiet)) {
+		xout(std::cerr, fmt, std::forward<Args>(args)...);
 	}
 }
 
 template <typename... Args>
-void err([[maybe_unused]] bool predicate, [[maybe_unused]] Args&&... args)
-{
-	if (predicate && !cfg::test(cfg::flag::quiet))
-	{
-		xout(std::cerr, std::forward<Args>(args)...);
-	}
-}
-
-template <typename... Args>
-void log(Args&&... args)
-{
-	log(true, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void err(Args&&... args)
-{
-	err(true, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void log_force(Args&&... args)
-{
-	xout(std::cout, std::forward<Args>(args)...);
+void log_force(std::string_view fmt, Args&&... args) {
+	xout(std::cout, fmt, std::forward<Args>(args)...);
 }
 
 template <typename F, typename... Args>
-void do_if(bool predicate, F f, Args&&... args)
-{
-	if (predicate)
-	{
+void do_if(bool predicate, F f, Args&&... args) {
+	if (predicate) {
 		f(std::forward<Args>(args)...);
 	}
 }
 
 template <typename Pred, typename F, typename... Args>
-void do_if(Pred predicate, F f, Args&&... args)
-{
-	if (predicate())
-	{
+void do_if(Pred predicate, F f, Args&&... args) {
+	if (predicate()) {
 		f(std::forward<Args>(args)...);
 	}
 }

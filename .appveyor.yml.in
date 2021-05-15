@@ -4,14 +4,17 @@ environment:
     LOCC_VERSION: "@LOCC_VERSION@"
   matrix:
     - job_name: Windows x64
-      appveyor_build_worker_image: Visual Studio 2019
+      appveyor_build_worker_image: Visual Studio 2019 Preview
     - job_name: Linux x64
       appveyor_build_worker_image: Ubuntu
 configuration:
   - Release
 install:
   - cmd: cmake -G "Visual Studio 16 2019" .
-  - sh: cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
+  - sh: |
+      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      sudo apt -qq update -y && sudo apt -qq install -y gcc-10 g++-10
+      cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$CONFIGURATION .
 for:
   - matrix:
       only:
@@ -26,14 +29,14 @@ for:
       only:
         - job_name: Linux x64
     build_script:
-      - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && ninja -v || exit 1
+      - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && cmake --build . -v || exit 1
     artifacts:
       - path: locc-v@LOCC_VERSION@-Linux-x64.tar.gz
 test_script:
   - cmd: |
       .\Release\locc.exe -dbv . || exit 1
       .\Release\locc.exe --version || exit 1
-  - sh: ./locc -dbv . || exit 1; ./locc --version || exit 1
+  - sh: ./locc -db --verbose . || exit 1; ./locc --version || exit 1
 after_build:
   - cmd: 7z a locc-v@LOCC_VERSION@-Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
   - sh: tar -caf locc-v@LOCC_VERSION@-Linux-x64.tar.gz locc
