@@ -4,7 +4,7 @@ environment:
     LOCC_VERSION: "@LOCC_VERSION@"
   matrix:
     - job_name: Windows x64
-      appveyor_build_worker_image: Visual Studio 2019
+      appveyor_build_worker_image: Visual Studio 2019 Preview
     - job_name: Linux x64
       appveyor_build_worker_image: Ubuntu
 configuration:

@@ -7,3 +7,6 @@
 [submodule "libs/clap"]
 	path = libs/clap
 	url = https://github.com/karnkaul/clap
+[submodule "src/kt/kthread"]
+	path = src/kt/kthread
+	url = https://github.com/karnkaul/kthread

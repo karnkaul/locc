@@ -1,6 +1,5 @@
 #pragma once
 #include <app/config.hpp>
-#include <app/file_list_generator.hpp>
 #include <clap/interpreter.hpp>
 #include <kt/str_format/str_format.hpp>
 
@@ -20,9 +19,7 @@ template <typename Arg, typename... Args>
 std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args);
 
 template <typename X, typename... Args>
-requires requires(X x) {
-	x << std::declval<std::string>();
-}
+requires requires(X x) { x << std::declval<std::string>(); }
 void xout(X& ostream, std::string_view fmt, Args&&... args) {
 	std::stringstream str;
 	kt::format_str(str, fmt, std::forward<Args>(args)...);

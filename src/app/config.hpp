@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <bitset>
+#include <optional>
 #include <sstream>
 #include <unordered_set>
 #include <app/common.hpp>
@@ -72,6 +73,8 @@ struct settings final {
 	};
 	// clang-format on
 
+	void prep();
+	std::optional<locc::file_t> include_file(stdfs::path const& path) const;
 	locc::comment_info const& find_comment_info(locc::ext_t const& extension) const;
 	locc::id_t get_id(std::string const& query) const;
 };
