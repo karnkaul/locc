@@ -26,15 +26,10 @@ else()
 endif()
 
 add_subdirectory(libs/clap)
+add_subdirectory(libs/ktl)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	option(LOCC_COPY_CCJSON "Copy compile_commands.json" ON)
-else()
-	option(LOCC_COPY_CCJSON "Copy compile_commands.json" OFF)
-endif()
-
-if(LOCC_COPY_CCJSON)
-	set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
+	set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
 endif()
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.?pp")
@@ -45,10 +40,11 @@ source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}" FILES "${OUTFILE}")
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml.in" "${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml")
 
+
 add_executable(locc ${SOURCES})
 target_compile_features(locc PUBLIC cxx_std_20)
 target_include_directories(locc PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/src")
-target_link_libraries(locc PRIVATE clap::clap)
+target_link_libraries(locc PRIVATE clap::clap ktl::ktl)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(locc PRIVATE pthread stdc++fs)
@@ -62,10 +58,4 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(locc PRIVATE -Wextra -Wall -Werror=return-type $<$<NOT:$<CONFIG:Debug>>:-Werror>)
-endif()
-
-set(CCJSON "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json")
-if(LOCC_COPY_CCJSON AND EXISTS "${CCJSON}")
-	message(STATUS "Copying ${CCJSON} to project root")
-	file(COPY "${CCJSON}" DESTINATION "${PROJECT_SOURCE_DIR}")
 endif()

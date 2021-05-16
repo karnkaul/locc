@@ -1,7 +1,7 @@
 #pragma once
 #include <app/config.hpp>
 #include <clap/interpreter.hpp>
-#include <kt/str_format/str_format.hpp>
+#include <ktl/str_format.hpp>
 
 namespace locc {
 struct result_t;
@@ -19,25 +19,17 @@ template <typename Arg, typename... Args>
 std::stringstream& concat(std::stringstream& in, Arg&& arg, Args&&... args);
 
 template <typename X, typename... Args>
-requires requires(X x) { x << std::declval<std::string>(); }
-void xout(X& ostream, std::string_view fmt, Args&&... args) {
-	std::stringstream str;
-	kt::format_str(str, fmt, std::forward<Args>(args)...);
-	ostream << str.str();
-}
+	requires requires(X x) { x << std::declval<std::string>(); }
+void xout(X& ostream, std::string_view fmt, Args&&... args) { ostream << ktl::format(fmt, std::forward<Args>(args)...); }
 
 template <typename... Args>
 void log_if(bool predicate, std::string_view fmt, Args&&... args) {
-	if (predicate && !cfg::test(cfg::flag::quiet)) {
-		xout(std::cout, fmt, std::forward<Args>(args)...);
-	}
+	if (predicate && !cfg::test(cfg::flag::quiet)) { xout(std::cout, fmt, std::forward<Args>(args)...); }
 }
 
 template <typename... Args>
 void err_if(bool predicate, std::string_view fmt, Args&&... args) {
-	if (predicate && !cfg::test(cfg::flag::quiet)) {
-		xout(std::cerr, fmt, std::forward<Args>(args)...);
-	}
+	if (predicate && !cfg::test(cfg::flag::quiet)) { xout(std::cerr, fmt, std::forward<Args>(args)...); }
 }
 
 template <typename... Args>
@@ -47,15 +39,11 @@ void log_force(std::string_view fmt, Args&&... args) {
 
 template <typename F, typename... Args>
 void do_if(bool predicate, F f, Args&&... args) {
-	if (predicate) {
-		f(std::forward<Args>(args)...);
-	}
+	if (predicate) { f(std::forward<Args>(args)...); }
 }
 
 template <typename Pred, typename F, typename... Args>
 void do_if(Pred predicate, F f, Args&&... args) {
-	if (predicate()) {
-		f(std::forward<Args>(args)...);
-	}
+	if (predicate()) { f(std::forward<Args>(args)...); }
 }
 } // namespace locc

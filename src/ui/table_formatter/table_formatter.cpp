@@ -5,9 +5,7 @@
 
 namespace kt {
 std::ostream& operator<<(std::ostream& out_str, table_formatter::fill const& fill) {
-	if (fill.second > 0) {
-		out_str << std::setw(fill.second) << std::setfill(fill.first) << fill.first << std::setfill(out_str.widen(' '));
-	}
+	if (fill.second > 0) { out_str << std::setw(fill.second) << std::setfill(fill.first) << fill.first << std::setfill(out_str.widen(' ')); }
 	return out_str;
 }
 
@@ -70,17 +68,13 @@ bool table_formatter::sort(std::uint8_t col_index, bool descending) {
 }
 
 std::string table_formatter::to_string() const {
-	if (m_data.cols.empty()) {
-		return {};
-	}
+	if (m_data.cols.empty()) { return {}; }
 	std::ostringstream str;
 	std::uint16_t tw = table_width();
 	static std::string const blank_str;
 	serialise_row(str, m_info.header_pad, [](col const& col, std::size_t) -> std::string const& { return col.header; });
 
-	if (m_info.show_header_separator) {
-		str << fill{m_info.row_prefix.first, m_info.row_prefix.second} << fill{m_info.header_separator, tw} << "\n";
-	}
+	if (m_info.show_header_separator) { str << fill{m_info.row_prefix.first, m_info.row_prefix.second} << fill{m_info.header_separator, tw} << "\n"; }
 	for (auto const& row : m_data.rows) {
 		auto per_row = [&row](col const&, std::size_t index) -> std::string const& { return index >= row.size() ? blank_str : row.at(index).text; };
 		serialise_row(str, m_info.col_pad, per_row);

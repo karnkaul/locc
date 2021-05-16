@@ -29,7 +29,8 @@ struct comment_info final {
 constexpr std::size_t null_index = std::string::npos;
 
 template <typename T = std::size_t>
-	requires std::integral<T> || std::floating_point<T> struct lines_t {
+	requires std::integral<T> || std::floating_point<T>
+struct lines_t {
 	T code = {};
 	T comments = {};
 	T total = {};
@@ -80,9 +81,7 @@ struct result_t final {
 	auto transform_dist(Pred predicate) const {
 		Cont<id_t, file_stats, Args...> ret;
 		for (auto const& [ext, data] : dist) {
-			if (predicate(ext, data)) {
-				ret.emplace(ext, data);
-			}
+			if (predicate(ext, data)) { ret.emplace(ext, data); }
 		}
 		return ret;
 	}
