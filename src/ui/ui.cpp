@@ -6,7 +6,7 @@
 
 namespace {
 template <typename F>
-requires std::invocable<F, std::string_view>
+	requires std::invocable<F, std::string_view>
 void parse_values(std::string_view values, F f) {
 	while (!values.empty()) {
 		std::size_t const comma = values.find(',');
@@ -14,9 +14,7 @@ void parse_values(std::string_view values, F f) {
 			f(values.substr(0, comma));
 			values = values.substr(comma + 1);
 		} else {
-			if (!values.empty()) {
-				f(values);
-			}
+			if (!values.empty()) { f(values); }
 			values = {};
 		}
 	}
@@ -64,9 +62,7 @@ clap::interpreter::spec_t::main_t locc::options_cmd() {
 		}
 		if (auto val = params.opt_value("extensions")) {
 			parse_values(*val, [](auto v) {
-				if (!v.empty() && v[0] == '.') {
-					cfg::g_settings.ext_passlist.insert(std::string(v));
-				}
+				if (!v.empty() && v[0] == '.') { cfg::g_settings.ext_passlist.insert(std::string(v)); }
 			});
 		}
 		if (auto val = params.opt_value("sort-by")) {
@@ -77,36 +73,20 @@ clap::interpreter::spec_t::main_t locc::options_cmd() {
 				}
 			}
 		}
-		if (params.opt_value("blanks")) {
-			cfg::set(cfg::flag::blanks);
-		}
-		if (params.opt_value("one-thread")) {
-			cfg::set(cfg::flag::one_thread);
-		}
-		if (params.opt_value("skip-symlinks")) {
-			cfg::set(cfg::flag::skip_symlinks);
-		}
-		if (params.opt_value("quiet")) {
-			cfg::set(cfg::flag::quiet);
-		}
-		if (params.opt_value("verbose")) {
-			cfg::set(cfg::flag::verbose);
-		}
-		if (params.opt_value("debug")) {
-			cfg::set(cfg::flag::debug);
-		}
+		if (params.opt_value("blanks")) { cfg::set(cfg::flag::blanks); }
+		if (params.opt_value("one-thread")) { cfg::set(cfg::flag::one_thread); }
+		if (params.opt_value("skip-symlinks")) { cfg::set(cfg::flag::skip_symlinks); }
+		if (params.opt_value("quiet")) { cfg::set(cfg::flag::quiet); }
+		if (params.opt_value("verbose")) { cfg::set(cfg::flag::verbose); }
+		if (params.opt_value("debug")) { cfg::set(cfg::flag::debug); }
 	};
 	return ret;
 }
 
 void locc::print_debug_prologue() {
 	log_if(true, "\n  -- flags:");
-	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i) {
-		log_if(true, "{} = {}, ", cfg::g_flag_names.at(i), cfg::test((cfg::flag)i));
-	}
-	if (cfg::g_flags.none()) {
-		log_if(true, " [none]");
-	}
+	for (std::size_t i = 0; i < (std::size_t)cfg::flag::count_; ++i) { log_if(true, "{} = {}, ", cfg::g_flag_names.at(i), cfg::test((cfg::flag)i)); }
+	if (cfg::g_flags.none()) { log_if(true, " [none]"); }
 	log_if(true, "\n  -- sort-by: {}", cfg::g_columns.at((std::size_t)cfg::g_sort_by).name);
 	log_if(true, "\n\n");
 }
@@ -119,18 +99,14 @@ void locc::print(locc::result_t const& result) {
 			tf.add_column("LOC");
 			tf.add_column("Total");
 			tf.add_column("Comments");
-			for (auto const& file : result.files) {
-				tf.add_row(file.path.generic_string(), file.lines.code, file.lines.total, file.lines.comments);
-			}
+			for (auto const& file : result.files) { tf.add_row(file.path.generic_string(), file.lines.code, file.lines.total, file.lines.comments); }
 			tf.sort(sort_index, false);
 			log_if(true, "\n{}\n", tf.to_string());
 			tf.clear();
 		}
 		if (!cfg::test(cfg::flag::quiet)) {
 			auto dist = result.transform_dist();
-			for (auto const& column : cfg::g_columns) {
-				tf.add_column(column.ui_name(), column.reverse);
-			}
+			for (auto const& column : cfg::g_columns) { tf.add_column(column.ui_name(), column.reverse); }
 			locc::result_t::file_stats total;
 			for (auto const& [id, data] : dist) {
 				tf.add_row(id, data.counts.lines.code, data.counts.lines.total, data.counts.lines.comments, data.counts.files, data.ratio.code);

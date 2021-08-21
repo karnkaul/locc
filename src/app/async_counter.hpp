@@ -1,9 +1,9 @@
 #pragma once
 #include <functional>
+#include <mutex>
 #include <app/common.hpp>
-#include <kt/async_queue/async_queue.hpp>
-#include <kt/async_queue/lockable.hpp>
-#include <kt/kthread/kthread.hpp>
+#include <ktl/async_queue.hpp>
+#include <ktl/kthread.hpp>
 
 namespace locc {
 struct result_t;
@@ -19,12 +19,12 @@ class async_counter {
 
   private:
 	struct worker;
-	using async_queue = kt::async_queue<std::function<void()>>;
+	using async_queue = ktl::async_queue<std::function<void()>>;
 
 	void count_impl(file_t file, bool blanks);
 
 	async_queue m_queue;
-	kt::lockable_t<> m_mutex;
+	std::mutex m_mutex;
 	std::vector<worker> m_workers;
 };
 } // namespace locc

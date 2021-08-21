@@ -72,9 +72,7 @@ std::ostream& operator<<(std::ostream& out_str, table_formatter::fill const& fil
 
 template <typename Arg, typename... Args>
 void table_formatter::add_row(Arg&& arg, Args&&... args) {
-	if (m_data.cols.empty()) {
-		m_data.cols.push_back({});
-	}
+	if (m_data.cols.empty()) { m_data.cols.push_back({}); }
 	m_data.rows.push_back({});
 	add_row_impl(std::forward<Arg>(arg), std::forward<Args>(args)...);
 	m_data.write_head = 0;
@@ -82,14 +80,10 @@ void table_formatter::add_row(Arg&& arg, Args&&... args) {
 
 template <typename T>
 void table_formatter::add_cell(T&& arg) {
-	if (m_data.write_head >= m_data.cols.size()) {
-		return;
-	}
+	if (m_data.write_head >= m_data.cols.size()) { return; }
 	auto& row = m_data.rows.back();
 	auto& col = m_data.cols.at(m_data.write_head);
-	while (m_data.write_head >= row.size()) {
-		row.push_back({});
-	}
+	while (m_data.write_head >= row.size()) { row.push_back({}); }
 	auto& cell = row.at(m_data.write_head++);
 	if constexpr (std::is_integral_v<std::decay_t<T>>) {
 		cell.text = std::to_string(arg);
@@ -119,8 +113,6 @@ void table_formatter::add_cell(T&& arg) {
 template <typename Arg, typename... Args>
 void table_formatter::add_row_impl(Arg&& arg, Args&&... args) {
 	add_cell<Arg>(std::forward<Arg>(arg));
-	if constexpr (sizeof...(args) > 0) {
-		add_row_impl<Args...>(std::forward<Args>(args)...);
-	}
+	if constexpr (sizeof...(args) > 0) { add_row_impl<Args...>(std::forward<Args>(args)...); }
 }
 } // namespace kt

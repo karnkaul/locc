@@ -17,9 +17,7 @@ struct column final {
 
 	inline std::string ui_name() const {
 		std::string ret(name);
-		if (!ret.empty()) {
-			ret.at(0) = std::toupper(ret.at(0));
-		}
+		if (!ret.empty()) { ret.at(0) = std::toupper(ret.at(0)); }
 		return ret;
 	}
 };

@@ -1,12 +1,6 @@
-[submodule "src/kt/async_queue"]
-	path = src/kt/async_queue
-	url = https://github.com/karnkaul/async-queue.git
-[submodule "src/kt/str_format"]
-	path = src/kt/str_format
-	url = https://github.com/karnkaul/str-format
 [submodule "libs/clap"]
 	path = libs/clap
 	url = https://github.com/karnkaul/clap
-[submodule "src/kt/kthread"]
-	path = src/kt/kthread
-	url = https://github.com/karnkaul/kthread
+[submodule "src/ktl"]
+	path = libs/ktl
+	url = https://github.com/karnkaul/ktl
