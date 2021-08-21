@@ -1,7 +1,7 @@
-version: "0.1-{build}"
+version: "0.1.1-{build}"
 environment:
   global:
-    LOCC_VERSION: "0.1"
+    LOCC_VERSION: "0.1.1"
   matrix:
     - job_name: Windows x64
       appveyor_build_worker_image: Visual Studio 2019 Preview
@@ -24,30 +24,30 @@ for:
       parallel: true
       verbosity: minimal
     artifacts:
-      - path: locc-v0.1-Windows-x64.zip
+      - path: locc-v0.1.1-Windows-x64.zip
   - matrix:
       only:
         - job_name: Linux x64
     build_script:
       - sh: echo -e "Version=$LOCC_VERSION\n == Building Linux $CONFIGURATION ==" && cmake --build . -v || exit 1
     artifacts:
-      - path: locc-v0.1-Linux-x64.tar.gz
+      - path: locc-v0.1.1-Linux-x64.tar.gz
 test_script:
   - cmd: |
       .\Release\locc.exe -dbv . || exit 1
       .\Release\locc.exe --version || exit 1
   - sh: ./locc -db --verbose . || exit 1; ./locc --version || exit 1
 after_build:
-  - cmd: 7z a locc-v0.1-Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
-  - sh: tar -caf locc-v0.1-Linux-x64.tar.gz locc
+  - cmd: 7z a locc-v0.1.1-Windows-x64.zip %APPVEYOR_BUILD_FOLDER%\Release\locc.exe
+  - sh: tar -caf locc-v0.1.1-Linux-x64.tar.gz locc
 deploy:
   - provider: GitHub
-    tag: "v0.1"
-    release: "locc-v0.1"
+    tag: "v0.1.1"
+    release: "locc-v0.1.1"
     description: "Instigator: Appveyor CI script"
     auth_token:
       secure: Q4k4QeaxqXS7TIPI+dKfG8m2a8RTpP9G4sbpxhA9isKu3PgZywKwy5+ecPXyS7A5
-    artifact: locc-v0.1-Windows-x64.zip,locc-v0.1-Linux-x64.tar.gz
+    artifact: locc-v0.1.1-Windows-x64.zip,locc-v0.1.1-Linux-x64.tar.gz
     draft: true
     prerelease: true
     on:
