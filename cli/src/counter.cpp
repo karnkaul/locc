@@ -1,0 +1,99 @@
+#include <counter.hpp>
+#include <table.hpp>
+#include <print>
+#include <thread>
+
+namespace locc::cli {
+namespace {
+void print_rows(std::span<Row const> rows) {
+	std::println();
+	auto table = Table{};
+	for (auto const& row : rows) { table.add_row(row); }
+	std::println("{}", table.serialize());
+}
+
+constexpr auto by_file_type = LineCount::Metric{100};
+
+constexpr auto to_metric(std::string_view const sort_by) -> LineCount::Metric {
+	if (sort_by == Table::file_type_name_v) { return by_file_type; }
+	for (std::size_t i = 0; i < LineCount::COUNT_; ++i) {
+		auto const metric = LineCount::Metric{i};
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+		if (sort_by == metric_name_v[metric]) { return metric; }
+	}
+	return LineCount::Lines;
+}
+} // namespace
+
+Counter::Counter(Params const& params, InstanceCreateInfo ici)
+	: m_params(params), m_queue(ktask::QueueCreateInfo{.thread_count = ktask::ThreadCount{params.thread_count}}), m_locc(m_queue, std::move(ici)) {}
+
+void Counter::run() {
+	if (m_params.verbose) { print_params(); }
+
+	auto line_counter = m_locc.start_count(m_params.path);
+	if (!line_counter) { return; }
+
+	if (!m_params.no_progress) {
+		std::println();
+		m_progress_bar.resize(progress_bar_length_v, '-');
+		print_progress();
+	}
+
+	if (m_params.no_progress) {
+		line_counter->wait();
+	} else {
+		print_progress_until_ready(*line_counter);
+	}
+
+	auto rows = line_counter->to_rows();
+	auto const sort_by = to_metric(m_params.sort_by);
+	if (sort_by == by_file_type) {
+		sort_by_file_type(rows);
+	} else {
+		sort_by_metric(rows, sort_by);
+	}
+	rows.push_back(Row::aggregate(rows));
+
+	print_rows(rows);
+}
+
+void Counter::print_params() const {
+	std::println("params:");
+	auto const print_param = [](std::string_view left, auto const& right) { std::println("  {}: {}", left, right); };
+	print_param("sort by\t\t", m_params.sort_by);
+	print_param("exclude\t\t", m_params.exclude_patterns);
+	print_param("grammars\t\t", m_params.grammars_json);
+	print_param("threads\t\t", m_params.thread_count);
+	print_param("no progress\t\t", m_params.no_progress);
+	print_param("verbose\t\t", m_params.verbose);
+	print_param("path\t\t\t", m_params.path);
+	std::println();
+}
+
+void Counter::print_progress() {
+	for (std::size_t i = 0; i < m_progress_length; ++i) { std::print(" "); }
+	std::print("\r");
+	auto const n = std::size_t(m_progress.as_float() * progress_bar_length_v);
+	for (std::size_t i = 0; i < n; ++i) { m_progress_bar.at(i) = '='; }
+	m_progress_length = std::formatted_size("[{}] {} ({}/{})", m_progress_bar, to_str(m_progress.state), m_progress.counted, m_progress.total);
+	std::print("[{}] {} ({}/{})", m_progress_bar, to_str(m_progress.state), m_progress.counted, m_progress.total);
+	std::fflush(stdout);
+}
+
+void Counter::print_progress_until_ready(LineCounter const& line_counter) {
+	std::print("\r");
+	while (line_counter.is_busy()) {
+		auto const progress = line_counter.get_progress();
+		if (progress != m_progress) {
+			m_progress = progress;
+			print_progress();
+			std::print("\r");
+		}
+		std::this_thread::yield();
+	}
+	m_progress = line_counter.get_progress();
+	print_progress();
+	std::println();
+}
+} // namespace locc::cli

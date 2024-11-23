@@ -1,150 +1,125 @@
-## Lines of Code Counter
+# Lines of Code Counter
 
-[![Build status](https://ci.appveyor.com/api/projects/status/056xjwjht5fwxf4n?svg=true)](https://ci.appveyor.com/project/karnkaul/locc)
+[![Build status](https://github.com/karnkaul/locc/actions/workflows/ci.yml/badge.svg)](https://github.com/karnkaul/locc/actions/workflows/ci.yml)
 
-`locc` prints a small report summarising the counts of lines of code, given a root directory.
+`locc` prints a small report summarising the counts of lines of code, given a path.
 
-### Usage
+## Usage
 
 Syntax:
 
 ```
-locc [options] <directory>
+locc [OPTIONS...] <path>
 ```
 
-### Output
+## Output
 
 Examples of output (may be out of date until release):
 
-Linux kernel (20 million LOC)
+Linux kernel (36 million lines counted)
 
 ```
-$ time locc linux-master
+$ time ./locc-cli linux/
 
- | File          |     Code |    Total | Comments | Files | Ratio |
- ------------------------------------------------------------------
- | C             | 16088983 | 19879024 |    35616 | 28969 | 0.748 |
- | C header      |  4909329 |  6079780 |   139577 | 21112 | 0.228 |
- | Plain Text    |   200603 |   242803 |        0 |  3230 | 0.009 |
- | JSON          |   175200 |   175200 |        0 |   328 | 0.008 |
- | Shell script  |    57795 |    82865 |    10413 |   517 | 0.003 |
- | Makefile      |    57108 |    66883 |        0 |  2581 | 0.003 |
- | Python        |    26771 |    34364 |     2778 |   113 | 0.001 |
- | C++           |     1993 |     2360 |       23 |     8 | 0.000 |
- | gitignore     |     1693 |     1716 |        0 |   254 | 0.000 |
- | CSV           |      209 |      210 |        0 |     6 | 0.000 |
- | CSS           |      105 |      138 |        0 |     1 | 0.000 |
- | C++ header    |       99 |      127 |        0 |     2 | 0.000 |
- | INI           |        7 |        8 |        0 |     1 | 0.000 |
- | gitattributes |        7 |        7 |        0 |     2 | 0.000 |
- | Total         | 21519902 | 26565485 |   188407 | 57124 | 1.000 |
+[====================] Completed (72352/72352)
+
+---------------------------------------------------------------------------
+| File Type    |  Files |      Lines |       Code |  Comments |     Empty |
+---------------------------------------------------------------------------
+| C            | 34,679 | 24,641,580 | 18,335,424 | 2,752,545 | 3,553,611 |
+| C/C++ header | 26,396 | 10,216,011 |  7,944,696 | 1,508,356 |   762,959 |
+| JSON         |    867 |    537,555 |    537,553 |         0 |         2 |
+| YAML         |  4,436 |    497,589 |    395,624 |    20,318 |    81,647 |
+| Shell script |    923 |    181,514 |    126,030 |    22,945 |    32,539 |
+| Plain Text   |  1,503 |    136,506 |          0 |         0 |    24,586 |
+| Makefile     |  3,156 |     84,147 |     59,038 |    12,933 |    12,176 |
+| Python       |    264 |     79,032 |     62,136 |     4,910 |    11,986 |
+| XML          |     24 |     22,163 |     19,282 |     1,663 |     1,218 |
+| Rust         |     82 |     19,716 |      9,246 |     8,760 |     1,710 |
+| C++          |      4 |      2,305 |      1,870 |       100 |       335 |
+| CSV          |     11 |      1,373 |          0 |         0 |       106 |
+| Markdown     |      1 |        270 |        197 |         0 |        73 |
+| C++ header   |      2 |        125 |         59 |        47 |        19 |
+| HTML         |      2 |         33 |         22 |         8 |         3 |
+| INI          |      2 |         13 |          6 |         5 |         2 |
+| Total        | 72,352 | 36,419,932 | 27,491,183 | 4,332,590 | 4,482,972 |
+---------------------------------------------------------------------------
 
 
-real    0m0.729s
-user    0m4.091s
-sys     0m0.827s
-
+real    0m0.550s
+user    0m4.313s
+sys     0m1.076s
 ```
 
 This repo (v0.1)
 
 ```
-$ ./locc --verbose -e=.md .
-
- | File                                         | LOC | Total | Comments |
- -------------------------------------------------------------------------
- | ./.appveyor.yml                              |  58 |    60 |        0 |
- | ./.gitattributes                             |   4 |     5 |        0 |
- | ./.gitignore                                 |  10 |    10 |        0 |
- | ./.gitmodules                                |  13 |    13 |        0 |
- | ./CMakeLists.txt                             |  61 |    72 |        0 |
- | ./CMakePresets.json                          |  45 |    45 |        0 |
- | ./README.md                                  |  95 |   126 |        0 |
- | ./compile_commands.json                      |  28 |    28 |        0 |
- | ./libs/clap/CMakeLists.txt                   |  13 |    18 |        0 |
- | ./libs/clap/README.md                        | 101 |   145 |        0 |
- | ./libs/clap/example/CMakeLists.txt           |   7 |     9 |        0 |
- | ./libs/clap/example/clapp.cpp                |  75 |    88 |        5 |
- | ./libs/clap/include/clap/interpreter.hpp     | 356 |   486 |       85 |
- | ./libs/clap/include/clap/parser.hpp          | 113 |   161 |       34 |
- | ./locc_settings.json                         |  81 |    81 |        0 |
- | ./out/db/cmake_install.cmake                 |  51 |    61 |        0 |
- | ./out/db/compile_commands.json               |  28 |    28 |        0 |
- | ./out/db/libs/clap/cmake_install.cmake       |  38 |    45 |        0 |
- | ./out/db/src/build_version.hpp               |  10 |    12 |        0 |
- | ./out/rl/cmake_install.cmake                 |  51 |    61 |        0 |
- | ./out/rl/libs/clap/cmake_install.cmake       |  38 |    45 |        0 |
- | ./out/rl/src/build_version.hpp               |  10 |    12 |        0 |
- | ./src/app/common.hpp                         |  81 |    97 |        0 |
- | ./src/app/config.cpp                         |  76 |    80 |        0 |
- | ./src/app/config.hpp                         |  76 |    88 |        2 |
- | ./src/app/line_counter.cpp                   | 144 |   155 |        0 |
- | ./src/app/line_counter.hpp                   |  24 |    31 |        0 |
- | ./src/kt/async_queue/async_queue.hpp         | 103 |   169 |       52 |
- | ./src/kt/async_queue/lockable.hpp            |  13 |    24 |        8 |
- | ./src/kt/async_queue/locker.hpp              |  53 |    86 |       16 |
- | ./src/kt/kthread/kthread.hpp                 |  52 |    78 |       18 |
- | ./src/kt/str_format/str_format.hpp           |  27 |    34 |        2 |
- | ./src/main.cpp                               |  51 |    53 |        0 |
- | ./src/ui/table_formatter/table_formatter.cpp |  83 |    91 |        0 |
- | ./src/ui/table_formatter/table_formatter.hpp | 109 |   127 |        0 |
- | ./src/ui/ui.cpp                              | 147 |   153 |        0 |
- | ./src/ui/ui.hpp                              |  51 |    62 |        0 |
+$ ./locc-cli -vpe=ext .
+params:
+  sort by               : 
+  exclude               : ext
+  grammars              : 
+  threads               : 16
+  no progress           : true
+  verbose               : true
+  path                  : .
 
 
- | File          | Code | Total | Comments | Files | Ratio |
- -----------------------------------------------------------
- | C++ header    | 1078 |  1467 |      217 |    14 | 0.454 |
- | C++           |  576 |   620 |        5 |     6 | 0.242 |
- | CMake script  |  259 |   311 |        0 |     7 | 0.109 |
- | Markdown      |  196 |   271 |        0 |     2 | 0.082 |
- | JSON          |  182 |   182 |        0 |     4 | 0.077 |
- | YAML          |   58 |    60 |        0 |     1 | 0.024 |
- | .gitmodules   |   13 |    13 |        0 |     1 | 0.005 |
- | gitignore     |   10 |    10 |        0 |     1 | 0.004 |
- | gitattributes |    4 |     5 |        0 |     1 | 0.002 |
- | Total         | 2376 |  2939 |      222 |    37 | 1.000 |
-```
+-----------------------------------------------------------
+| File Type    | Files | Lines |  Code | Comments | Empty |
+-----------------------------------------------------------
+| C++          |    17 | 1,262 | 1,068 |       16 |   178 |
+| JSON         |     3 |   742 |   739 |        3 |     0 |
+| C++ header   |    19 |   447 |   344 |        5 |    98 |
+| CMake script |     4 |   192 |   160 |        0 |    32 |
+| Markdown     |     1 |   128 |    96 |        0 |    32 |
+| Plain Text   |     1 |     2 |     0 |        0 |     0 |
+| Total        |    45 | 2,773 | 2,407 |       24 |   340 |
+-----------------------------------------------------------
 
-### Performance
 
-`locc` is incredibly lightweight when compared to `loc` / `scc` / etc (orders of magnitude smaller), and generally runs faster than them as well, albeit with the least amount of stats / customisation.
-
-Stats on a 12 thread CPU with 32GB RAM, run on the Linux repo:
+real    0m0.013s
+user    0m0.011s
+sys     0m0.006s
 
 ```
- | Program |    Size |     Execution Time     |
- ----------------------------------------------
- | loc     | 4786KiB |  758.000ms (+/-19.7ms) |
- | scc     | 4561KiB | 1135.667ms (+/-6.7ms)  |
- | locc    |  298KiB |  724.136ms (+/-4.7ms)  |
+
+## Building
+
+Use CMake and a preset / generator of your choice. All provided presets use Ninja Multi-Config and the default compiler except those named `*clang*`.
+
+### Requirements
+
+- Desktop OS (`int main()` entry point)
+- CMake 3.23+
+- C++23 compiler (and stdlib)
+
+## Contributing
+
+Pull requests are welcome.
+
+## Architecture
+
+`locc-lib` is a library that can be used by CLI / GUI executables. `locc-cli` is the built-in CLI app that links to `locc-lib` and whose outputs are in this document.
+
+### Dependencies
+
+```
+  locc-cli
+     |
+  ----------------
+  |              |
+locc-lib       clap
+    |
+  --------
+  |      |
+ktask   djson
 ```
 
-### Options
+`djson` deals with parsing JSONs and is used for grammar IO. `ktask` is a lightweight task execution queue, `locc-lib` enqueues a counter task for each file using it. This _counter_ task is internal to `locc-lib` and not exposed to users. Users utilize a single `locc::LineCounter` wrapper task, which reports progress / status, and supports waiting (blocking) until all individual counters have completed (or if any counter has been dropped). It can be used by direct ownership, or shared ownership through `locc::Instance`, which owns a `ktask::Queue`. Using the instance is convenient when the queue isn't needed for any other tasks, otherwise own the queue and line counters yourself. As is evident, multiple line counters can share the same task queue, which can also have other tasks interleaved.
 
-`locc` supports a few command line parameters:
-
-- `--skip-substr=<substr0>[,substr1,...]`: Add path substring pattern to ignore
-- `-e=` / `--extensions=<.ext0>[,.ext1,...]`: Additional extensions to count in implicit mode
-- `--sort-by=<column_name>`: Sort results by column (lowercase, `code` by default)
-- `-o` / `--one-thread`: Run everything on the main thread
-- `-b` / `--blanks`: Include blank lines as lines of code
-- `-q` / `--quiet`: Print nothing but total lines of code
-- `--verbose`: Lots of output
-- `-d` / `--debug`: Misc debug output
-- `-h` / `--help`: Print help
-- `--version`: Print version
-
-### Building
-
-Use CMake and a generator of your choice.
-Requirements:
-
-- Windows / Linux (any architecture)
-- C++20 compiler (and stdlib)
-
-### Contributing
-
-Pull/merge requests are welcome.
+* [clap](https://github.com/karnkaul/clap)
+* [ktask](https://github.com/karnkaul/ktask)
+* [djson](https://github.com/karnkaul/djson)
 
 [**Original Repository**](https://github.com/karnkaul/locc)
