@@ -116,7 +116,9 @@ locc-lib       clap
 ktask   djson
 ```
 
-`djson` deals with parsing JSONs and is used for grammar IO. `ktask` is a lightweight task execution queue, `locc-lib` enqueues a counter task for each file using it. This _counter_ task is internal to `locc-lib` and not exposed to users. Users utilize a single `locc::LineCounter` wrapper task, which reports progress / status, and supports waiting (blocking) until all individual counters have completed (or if any counter has been dropped). It can be used by direct ownership, or shared ownership through `locc::Instance`, which owns a `ktask::Queue`. Using the instance is convenient when the queue isn't needed for any other tasks, otherwise own the queue and line counters yourself. As is evident, multiple line counters can share the same task queue, which can also have other tasks interleaved.
+`djson` deals with parsing JSONs and is used for grammar IO. `ktask` is a lightweight task execution queue, `locc-lib` enqueues a counter task for each file using it. This _counter_ task is internal to `locc-lib` and not exposed to users. Users utilize a single `locc::LineCounter` wrapper task, which reports progress / status, and supports waiting (blocking) until all individual counters have completed (or if any counter has been dropped). It can be used directly or through a `locc::Instance`. Using the instance is convenient when all line counters use the same grammars and file filters. As is evident, multiple line counters can share the same task queue, which can also have other tasks interleaved.
+
+`clap` is a command line argument parser, which `locc-cli` uses.
 
 * [clap](https://github.com/karnkaul/clap)
 * [ktask](https://github.com/karnkaul/ktask)

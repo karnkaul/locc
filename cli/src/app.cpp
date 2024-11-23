@@ -71,7 +71,7 @@ auto App::execute() -> int {
 	}
 
 	auto csv = Csv{m_params.exclude_patterns};
-	for (auto pattern = std::string_view{}; csv(pattern);) { m_filter.skip_patterns.push_back(pattern); }
+	for (auto pattern = std::string_view{}; csv(pattern);) { m_filter.exclude_patterns.push_back(pattern); }
 
 	Counter{m_params, std::move(ici)}.run();
 	return EXIT_SUCCESS;

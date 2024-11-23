@@ -32,7 +32,7 @@ void Counter::run() {
 	if (m_params.verbose) { print_params(); }
 
 	auto line_counter = m_locc.start_count(m_params.path);
-	if (!line_counter) { return; }
+	if (line_counter.get_status() == LineCounter::Status::None) { return; }
 
 	if (!m_params.no_progress) {
 		std::println();
@@ -41,12 +41,12 @@ void Counter::run() {
 	}
 
 	if (m_params.no_progress) {
-		line_counter->wait();
+		line_counter.wait();
 	} else {
-		print_progress_until_ready(*line_counter);
+		print_progress_until_ready(line_counter);
 	}
 
-	auto rows = line_counter->to_rows();
+	auto rows = line_counter.to_rows();
 	auto const sort_by = to_metric(m_params.sort_by);
 	if (sort_by == by_file_type) {
 		sort_by_file_type(rows);

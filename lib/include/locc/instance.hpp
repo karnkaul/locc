@@ -14,14 +14,12 @@ class Instance {
 
 	explicit Instance(ktask::Queue& queue, CreateInfo create_info = {});
 
-	[[nodiscard]] auto start_count(std::string_view path) -> std::shared_ptr<LineCounter>;
+	[[nodiscard]] auto start_count(std::string_view path) -> LineCounter;
 
   private:
 	ktask::Queue* m_queue;
 
 	std::vector<Grammar> m_grammars;
 	IFileFilter const* m_filter;
-
-	std::vector<std::shared_ptr<LineCounter>> m_line_counters{};
 };
 } // namespace locc
