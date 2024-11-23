@@ -17,7 +17,7 @@ class IFileFilter {
 };
 
 struct DefaultFileFilter : IFileFilter {
-	std::vector<std::string_view> skip_patterns{"build/", "out/", ".cache/", ".git/"};
+	std::vector<std::string_view> exclude_patterns{"build/", "out/", ".cache/", ".git/"};
 
 	[[nodiscard]] auto should_count(std::string_view path) const -> bool override;
 

@@ -4,6 +4,23 @@
 #include <charconv>
 
 namespace locc {
+namespace {
+template <template <typename> typename Comp>
+void do_sort_by_metric(std::span<Row> rows, LineCount::Metric metric) {
+	metric = std::clamp(metric, LineCount::Metric{}, LineCount::COUNT_);
+	auto const pred = [metric](Row const& a, Row const& b) {
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+		return Comp{}(a.line_count.metrics[metric], b.line_count.metrics[metric]);
+	};
+	std::ranges::sort(rows, pred);
+}
+
+template <template <typename> typename Comp>
+void do_sort_by_file_type(std::span<Row> rows) {
+	std::ranges::sort(rows, [](Row const& a, Row const& b) { return Comp{}(a.file_type, b.file_type); });
+}
+} // namespace
+
 auto Row::aggregate(std::span<Row const> rows, std::string file_type) -> Row {
 	auto ret = Row{.file_type = std::move(file_type)};
 	for (auto const& in : rows) { ret.line_count += in.line_count; }
@@ -27,15 +44,12 @@ auto locc::beautify(std::uint64_t const num) -> std::string {
 	return ret;
 }
 
-void locc::sort_by_metric(std::span<Row> rows, LineCount::Metric metric) {
-	metric = std::clamp(metric, LineCount::Metric{}, LineCount::COUNT_);
-	auto const pred = [metric](Row const& a, Row const& b) {
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-		return a.line_count.metrics[metric] > b.line_count.metrics[metric];
-	};
-	std::ranges::sort(rows, pred);
+void locc::sort_by_metric(std::span<Row> rows, LineCount::Metric metric, SortDir const sort_dir) {
+	if (sort_dir == SortDir::Ascending) { return do_sort_by_metric<std::less>(rows, metric); }
+	return do_sort_by_metric<std::greater>(rows, metric);
 }
 
-void locc::sort_by_file_type(std::span<Row> rows) {
-	std::ranges::sort(rows, [](Row const& a, Row const& b) { return a.file_type < b.file_type; });
+void locc::sort_by_file_type(std::span<Row> rows, SortDir const sort_dir) {
+	if (sort_dir == SortDir::Ascending) { return do_sort_by_file_type<std::less>(rows); }
+	return do_sort_by_file_type<std::greater>(rows);
 }

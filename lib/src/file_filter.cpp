@@ -3,7 +3,7 @@
 
 namespace locc {
 auto DefaultFileFilter::should_count(std::string_view const path) const -> bool {
-	return !std::ranges::any_of(skip_patterns, [path](std::string_view const s) { return path.contains(s); });
+	return !std::ranges::any_of(exclude_patterns, [path](std::string_view const s) { return path.contains(s); });
 }
 
 auto DefaultFileFilter::get_instance() -> DefaultFileFilter const& {

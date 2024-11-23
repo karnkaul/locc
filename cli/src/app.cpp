@@ -31,10 +31,11 @@ auto App::run(int const argc, char const* const* argv) -> int {
 	auto default_grammars = false;
 
 	auto const args = std::array{
-		clap::option(m_params.sort_by, "s,sort", "sort by COLUMN_NAME (default Lines)"),
+		clap::option(m_params.sort_column, "c,sort-column", "sort by COLUMN_NAME (default Lines)"),
 		clap::option(m_params.exclude_patterns, "e,exclude", "comma-separated exclude list (will not be counted)"),
 		clap::option(m_params.grammars_json, "g,grammars", "path to JSON containing an array of custom grammars"),
 		clap::option(m_params.thread_count, "t,threads", "number of threads to use"),
+		clap::flag(m_params.sort_ascending, "a,sort-ascend", "sort in ascending order"),
 		clap::flag(m_params.no_progress, "p,no-progress", "do not print progress while counting"),
 		clap::flag(default_grammars, "default-grammars", "output default grammars as JSON and exit"),
 		clap::flag(m_params.verbose, "v,verbose", "verbose output"),
@@ -71,7 +72,7 @@ auto App::execute() -> int {
 	}
 
 	auto csv = Csv{m_params.exclude_patterns};
-	for (auto pattern = std::string_view{}; csv(pattern);) { m_filter.skip_patterns.push_back(pattern); }
+	for (auto pattern = std::string_view{}; csv(pattern);) { m_filter.exclude_patterns.push_back(pattern); }
 
 	Counter{m_params, std::move(ici)}.run();
 	return EXIT_SUCCESS;
