@@ -1,6 +1,6 @@
 # Lines of Code Counter
 
-[![Build status](https://github.com/karnkaul/locc-23/actions/workflows/ci.yml/badge.svg)](https://github.com/karnkaul/locc-23/actions/workflows/ci.yml)
+[![Build status](https://github.com/karnkaul/locc/actions/workflows/ci.yml/badge.svg)](https://github.com/karnkaul/locc/actions/workflows/ci.yml)
 
 `locc` prints a small report summarising the counts of lines of code, given a path.
 
