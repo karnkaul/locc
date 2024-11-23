@@ -109,11 +109,15 @@ Pull requests are welcome.
      |
   ----------------
   |              |
-locc-lib       cliq
+locc-lib       clap
     |
   --------
   |      |
 ktask   djson
 ```
+
+* [clap](https://github.com/karnkaul/clap)
+* [ktask](https://github.com/karnkaul/ktask)
+* [djson](https://github.com/karnkaul/djson)
 
 [**Original Repository**](https://github.com/karnkaul/locc)
