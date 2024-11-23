@@ -32,7 +32,7 @@ void Counter::run() {
 	if (m_params.verbose) { print_params(); }
 
 	auto line_counter = m_locc.start_count(m_params.path);
-	if (line_counter.get_status() == LineCounter::Status::None) { return; }
+	if (!line_counter || line_counter->get_status() == LineCounter::Status::None) { return; }
 
 	if (!m_params.no_progress) {
 		std::println();
@@ -41,17 +41,18 @@ void Counter::run() {
 	}
 
 	if (m_params.no_progress) {
-		line_counter.wait();
+		line_counter->wait();
 	} else {
-		print_progress_until_ready(line_counter);
+		print_progress_until_ready(*line_counter);
 	}
 
-	auto rows = line_counter.to_rows();
-	auto const sort_by = to_metric(m_params.sort_by);
+	auto rows = line_counter->to_rows();
+	auto const sort_by = to_metric(m_params.sort_column);
+	auto const sort_dir = m_params.sort_ascending ? SortDir::Ascending : SortDir::Descending;
 	if (sort_by == by_file_type) {
-		sort_by_file_type(rows);
+		sort_by_file_type(rows, sort_dir);
 	} else {
-		sort_by_metric(rows, sort_by);
+		sort_by_metric(rows, sort_by, sort_dir);
 	}
 	rows.push_back(Row::aggregate(rows));
 
@@ -61,13 +62,14 @@ void Counter::run() {
 void Counter::print_params() const {
 	std::println("params:");
 	auto const print_param = [](std::string_view left, auto const& right) { std::println("  {}: {}", left, right); };
-	print_param("sort by\t\t", m_params.sort_by);
-	print_param("exclude\t\t", m_params.exclude_patterns);
-	print_param("grammars\t\t", m_params.grammars_json);
-	print_param("threads\t\t", m_params.thread_count);
-	print_param("no progress\t\t", m_params.no_progress);
-	print_param("verbose\t\t", m_params.verbose);
-	print_param("path\t\t\t", m_params.path);
+	print_param("sort by\t", m_params.sort_column);
+	print_param("exclude\t", m_params.exclude_patterns);
+	print_param("grammars\t", m_params.grammars_json);
+	print_param("threads\t", m_params.thread_count);
+	print_param("sort ascend\t", m_params.sort_ascending);
+	print_param("no progress\t", m_params.no_progress);
+	print_param("verbose\t", m_params.verbose);
+	print_param("path\t\t", m_params.path);
 	std::println();
 }
 

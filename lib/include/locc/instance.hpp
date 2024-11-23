@@ -14,7 +14,7 @@ class Instance {
 
 	explicit Instance(ktask::Queue& queue, CreateInfo create_info = {});
 
-	[[nodiscard]] auto start_count(std::string_view path) -> LineCounter;
+	[[nodiscard]] auto start_count(std::string_view path) -> std::unique_ptr<LineCounter>;
 
   private:
 	ktask::Queue* m_queue;

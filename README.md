@@ -14,7 +14,7 @@ locc [OPTIONS...] <path>
 
 ## Output
 
-Examples of output (may be out of date until release):
+Examples of output:
 
 Linux kernel (36 million lines counted)
 
@@ -54,33 +54,28 @@ sys     0m1.076s
 This repo (v0.1)
 
 ```
-$ ./locc-cli -vpe=ext .
+$ out/ubsan/cli/Debug/locc-cli -vpe=ext --sort-column=Comments --sort-ascend
 params:
-  sort by               : 
-  exclude               : ext
-  grammars              : 
-  threads               : 16
-  no progress           : true
-  verbose               : true
-  path                  : .
+  sort by       : Comments
+  exclude       : ext
+  grammars      : 
+  threads       : 16
+  sort ascend   : true
+  no progress   : true
+  verbose       : true
+  path          : .
 
 
 -----------------------------------------------------------
 | File Type    | Files | Lines |  Code | Comments | Empty |
 -----------------------------------------------------------
-| C++          |    17 | 1,262 | 1,068 |       16 |   178 |
-| JSON         |     3 |   742 |   739 |        3 |     0 |
-| C++ header   |    19 |   447 |   344 |        5 |    98 |
 | CMake script |     4 |   192 |   160 |        0 |    32 |
-| Markdown     |     1 |   128 |    96 |        0 |    32 |
-| Plain Text   |     1 |     2 |     0 |        0 |     0 |
-| Total        |    45 | 2,773 | 2,407 |       24 |   340 |
+| Markdown     |     1 |   126 |    93 |        0 |    33 |
+| JSON         |     3 |   634 |   631 |        3 |     0 |
+| C++ header   |    19 |   448 |   345 |        5 |    98 |
+| C++          |    17 | 1,279 | 1,083 |       16 |   180 |
+| Total        |    44 | 2,679 | 2,312 |       24 |   343 |
 -----------------------------------------------------------
-
-
-real    0m0.013s
-user    0m0.011s
-sys     0m0.006s
 
 ```
 
