@@ -1,6 +1,0 @@
-[submodule "libs/clap"]
-	path = libs/clap
-	url = https://github.com/karnkaul/clap
-[submodule "src/ktl"]
-	path = libs/ktl
-	url = https://github.com/karnkaul/ktl

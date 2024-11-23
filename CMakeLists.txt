@@ -1,61 +1,89 @@
-cmake_minimum_required(VERSION 3.3)
-set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
+cmake_minimum_required(VERSION 3.23)
+
+project(locc VERSION "0.2.0")
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_DEBUG_POSTFIX "-d")
 
-set(LOCC_VERSION "0.1.1" CACHE STRING "Application Version" FORCE)
-project(locc VERSION ${LOCC_VERSION})
+set(not_top_level ON)
 
-find_package(Git QUIET)
-set(LOCC_COMMIT_HASH "[unknown]")
-if(GIT_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
-	execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-		OUTPUT_VARIABLE LOCC_COMMIT_HASH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	message(STATUS "Updating git submodules at ${CMAKE_CURRENT_SOURCE_DIR}")
-	execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-		RESULT_VARIABLE UPDATE_SUBMODULES_RESULT
-	)
-	if(NOT UPDATE_SUBMODULES_RESULT EQUAL "0")
-		message(FATAL_ERROR "git submodule update failed! ${UPDATE_SUBMODULES_RESULT}")
-	endif()
-else()
-	message(WARNING "Git / .git not found, submodules missing, expect compile errors!")
+if(${PROJECT_IS_TOP_LEVEL})
+  set(not_top_level OFF)
 endif()
 
-add_subdirectory(libs/clap)
-add_subdirectory(libs/ktl)
+set(FETCHCONTENT_QUIET ${not_top_level})
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
+option(LOCC_BUILD_CLI "Build locc cli" ON)
+option(LOCC_BUILD_TESTS "Build locc tests" ${PROJECT_IS_TOP_LEVEL})
+
+add_library(${PROJECT_NAME}-compile-options INTERFACE)
+add_library(${PROJECT_NAME}::${PROJECT_NAME}-compile-options ALIAS ${PROJECT_NAME}-compile-options)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL Clang OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  target_compile_options(${PROJECT_NAME}-compile-options INTERFACE
+    -Wall -Wextra -Wpedantic -Wconversion -Werror=return-type
+  )
 endif()
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.?pp")
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
-set(OUTFILE "${CMAKE_CURRENT_BINARY_DIR}/src/build_version.hpp")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/build_version.hpp.in" "${OUTFILE}")
-source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}" FILES "${OUTFILE}")
+include(FetchContent)
+set(ext_dir "${CMAKE_CURRENT_SOURCE_DIR}/ext")
+set(fetch_targets "")
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml.in" "${CMAKE_CURRENT_SOURCE_DIR}/.appveyor.yml")
-
-
-add_executable(locc ${SOURCES})
-target_compile_features(locc PUBLIC cxx_std_20)
-target_include_directories(locc PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/src")
-target_link_libraries(locc PRIVATE clap::clap ktl::ktl)
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	target_link_libraries(locc PRIVATE pthread stdc++fs)
-	target_compile_options(locc PRIVATE -fPIC)
-	target_link_options(locc PRIVATE -no-pie)
-endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	target_compile_options(locc PRIVATE /MP)
-	target_compile_definitions(locc PRIVATE _UNICODE)
+if(LOCC_BUILD_CLI AND NOT TARGET clap)
+  set(CLIQ_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
+  set(CLIQ_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
+  FetchContent_Declare(clap
+    GIT_REPOSITORY https://github.com/karnkaul/clap
+    GIT_TAG v0.5.0
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/clap"
+  )
+  list(APPEND fetch_targets clap)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	target_compile_options(locc PRIVATE -Wextra -Wall -Werror=return-type $<$<NOT:$<CONFIG:Debug>>:-Werror>)
+if(LOCC_BUILD_TESTS AND NOT TARGET ktest)
+  FetchContent_Declare(ktest
+    GIT_REPOSITORY https://github.com/karnkaul/ktest
+    GIT_TAG v0.1.1
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/ktest"
+  )
+  list(APPEND fetch_targets ktest)
+endif()
+
+if(NOT TARGET ktask)
+  set(KTASK_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
+  FetchContent_Declare(ktask
+    GIT_REPOSITORY https://github.com/karnkaul/ktask
+    GIT_TAG v0.2.2
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/ktask"
+  )
+  list(APPEND fetch_targets ktask)
+endif()
+
+if(NOT TARGET djson)
+  set(KTASK_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
+  FetchContent_Declare(djson
+    GIT_REPOSITORY https://github.com/karnkaul/djson
+    GIT_TAG v2.1.2
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/djson"
+  )
+  list(APPEND fetch_targets djson)
+endif()
+
+FetchContent_MakeAvailable(${fetch_targets})
+
+add_subdirectory(lib)
+
+if(LOCC_BUILD_CLI)
+  add_subdirectory(cli)
+endif()
+
+if(LOCC_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
 endif()

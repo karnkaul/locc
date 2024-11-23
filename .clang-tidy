@@ -1,0 +1,19 @@
+---
+Checks: 'clang-analyzer-*,
+	concurrency-*,
+	cppcoreguidelines-*,
+	-cppcoreguidelines-non-private-member-variables-in-classes,
+	-cppcoreguidelines-avoid-magic-numbers,
+	-cppcoreguidelines-avoid-const-or-ref-data-members,
+	misc-*,
+	-misc-non-private-member-variables-in-classes,
+	-misc-no-recursion,
+	modernize-*,
+	performance-*,
+	portability-*,
+	readability-*,
+	-readability-identifier-length,
+	-readability-magic-numbers,
+	-readability-redundant-member-init,
+	-readability-uppercase-literal-suffix'
+...
