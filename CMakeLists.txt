@@ -49,9 +49,7 @@ if(LOCC_BUILD_CLI AND NOT TARGET gvdi)
   set(CLIQ_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
   FetchContent_Declare(gvdi
     GIT_REPOSITORY https://github.com/karnkaul/gvdi
-
-    # GIT_TAG v0.2.2
-    GIT_TAG a2f280c
+    GIT_TAG v0.2.3
     GIT_SHALLOW TRUE
     SOURCE_DIR "${ext_dir}/src/gvdi"
   )

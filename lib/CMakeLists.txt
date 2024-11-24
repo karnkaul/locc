@@ -16,10 +16,6 @@ target_compile_features(${lib_name} PUBLIC
   cxx_std_23
 )
 
-target_include_directories(${lib_name} PUBLIC
-  include
-)
-
 target_include_directories(${lib_name} PRIVATE
   src
 )
