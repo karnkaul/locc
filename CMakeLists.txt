@@ -15,7 +15,8 @@ endif()
 
 set(FETCHCONTENT_QUIET ${not_top_level})
 
-option(LOCC_BUILD_CLI "Build locc cli" ON)
+option(LOCC_BUILD_CLI "Build locc CLI app" ${PROJECT_IS_TOP_LEVEL})
+option(LOCC_BUILD_GUI "Build locc GUI app" ${PROJECT_IS_TOP_LEVEL})
 option(LOCC_BUILD_TESTS "Build locc tests" ${PROJECT_IS_TOP_LEVEL})
 
 add_library(${PROJECT_NAME}-compile-options INTERFACE)
@@ -41,6 +42,20 @@ if(LOCC_BUILD_CLI AND NOT TARGET clap)
     SOURCE_DIR "${ext_dir}/src/clap"
   )
   list(APPEND fetch_targets clap)
+endif()
+
+if(LOCC_BUILD_CLI AND NOT TARGET gvdi)
+  set(CLIQ_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
+  set(CLIQ_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
+  FetchContent_Declare(gvdi
+    GIT_REPOSITORY https://github.com/karnkaul/gvdi
+
+    # GIT_TAG v0.2.2
+    GIT_TAG a2f280c
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/gvdi"
+  )
+  list(APPEND fetch_targets gvdi)
 endif()
 
 if(LOCC_BUILD_TESTS AND NOT TARGET ktest)
@@ -81,6 +96,10 @@ add_subdirectory(lib)
 
 if(LOCC_BUILD_CLI)
   add_subdirectory(cli)
+endif()
+
+if(LOCC_BUILD_GUI)
+  add_subdirectory(gui)
 endif()
 
 if(LOCC_BUILD_TESTS)
