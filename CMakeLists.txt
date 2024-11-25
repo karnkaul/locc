@@ -33,8 +33,8 @@ set(ext_dir "${CMAKE_CURRENT_SOURCE_DIR}/ext")
 set(fetch_targets "")
 
 if(LOCC_BUILD_CLI AND NOT TARGET clap)
-  set(CLIQ_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
-  set(CLIQ_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
+  set(CLAP_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
+  set(CLAP_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
   FetchContent_Declare(clap
     GIT_REPOSITORY https://github.com/karnkaul/clap
     GIT_TAG v0.5.0
@@ -45,8 +45,6 @@ if(LOCC_BUILD_CLI AND NOT TARGET clap)
 endif()
 
 if(LOCC_BUILD_CLI AND NOT TARGET gvdi)
-  set(CLIQ_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
-  set(CLIQ_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
   FetchContent_Declare(gvdi
     GIT_REPOSITORY https://github.com/karnkaul/gvdi
     GIT_TAG v0.2.3
@@ -78,7 +76,6 @@ if(NOT TARGET ktask)
 endif()
 
 if(NOT TARGET djson)
-  set(KTASK_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
   FetchContent_Declare(djson
     GIT_REPOSITORY https://github.com/karnkaul/djson
     GIT_TAG v2.1.2

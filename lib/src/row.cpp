@@ -21,10 +21,8 @@ void do_sort_by_file_type(std::span<Row> rows) {
 }
 } // namespace
 
-auto Row::aggregate(std::span<Row const> rows, std::string file_type) -> Row {
-	auto ret = Row{.file_type = std::move(file_type)};
-	for (auto const& in : rows) { ret.line_count += in.line_count; }
-	return ret;
+void Row::aggregate(std::span<Row const> rows) {
+	for (auto const& in : rows) { line_count += in.line_count; }
 }
 } // namespace locc
 
