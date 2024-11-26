@@ -15,6 +15,8 @@ target_include_directories(${exe_name} PRIVATE
 target_sources(${exe_name} PRIVATE
   src/app.cpp
   src/app.hpp
+  src/config.cpp
+  src/config.hpp
   src/counter.cpp
   src/counter.hpp
   src/im_text.hpp

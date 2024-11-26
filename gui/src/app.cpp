@@ -12,8 +12,10 @@ namespace {
 } // namespace
 
 App::App() : m_instance(m_queue, InstanceCreateInfo{.file_filter = &m_filter}) {
-	for (auto const pattern : m_filter.exclude_patterns) { m_exclude_patterns.emplace_back(pattern); }
+	m_config.exclude_patterns.reserve(m_filter.exclude_patterns.size());
+	for (auto const pattern : m_filter.exclude_patterns) { copy_to(m_config.exclude_patterns.emplace_back(), pattern); }
 	set_filter();
+	set_config();
 }
 
 auto App::run() -> int {
@@ -43,6 +45,9 @@ auto App::create_context(gvdi::UniqueWindow window) -> bool {
 	glfwSetWindowUserPointer(window.get(), this);
 
 	glfwSetDropCallback(window.get(), [](GLFWwindow* w, int const count, char const** paths) { self(w).on_drop({paths, std::size_t(count)}); });
+	glfwSetKeyCallback(window.get(), [](GLFWwindow* w, int key, int /*code*/, int action, int mods) {
+		if (key == GLFW_KEY_C && action == GLFW_RELEASE && mods == 0) { self(w).m_config_modal.open_on_next_update(self(w).m_config); }
+	});
 
 	try {
 		m_context = std::make_unique<gvdi::Context>(std::move(window));
@@ -77,21 +82,26 @@ void App::update() {
 
 	update_header();
 	m_counter.update();
+	auto const config_saved = m_config_modal.update();
 
 	ImGui::End();
-	ImGui::ShowDemoWindow();
+
+	if (config_saved) { reload(true); }
 }
 
 void App::update_header() {
 	ImGui::TextUnformatted(m_counter.get_path());
-	ImGui::Checkbox("progress", &m_counter.show_progress);
+	ImGui::Checkbox("Progress", &m_counter.show_progress);
 	ImGui::SameLine();
-	ImGui::Checkbox("totals", &m_counter.show_totals);
+	ImGui::Checkbox("Totals", &m_counter.show_totals);
 
 	ImGui::SameLine();
 	update_sorting();
 
-	update_filter();
+	ImGui::SameLine();
+	if (ImGui::Button("Config")) { m_config_modal.open_on_next_update(m_config); }
+	ImGui::SameLine();
+	if (ImGui::Button("Reload")) { reload(false); }
 
 	ImGui::Separator();
 }
@@ -109,40 +119,30 @@ void App::update_sorting() {
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();
-	ImGui::Checkbox("ascending", &m_counter.sort_ascend);
+	ImGui::Checkbox("Ascending", &m_counter.sort_ascend);
 
 	if (prev_sort_ascend != m_counter.sort_ascend || prev_sort_by != m_counter.sort_by) { m_counter.sort_rows(); }
 }
 
-void App::update_filter() {
-	if (ImGui::TreeNode("Exclude patterns")) {
-		for (auto it = m_exclude_patterns.begin(); it != m_exclude_patterns.end(); ++it) {
-			ImGui::TextUnformatted(it->c_str());
-			ImGui::SameLine();
-			ImGui::SetCursorPosX(200.0f);
-			auto label = std::array<char, 32>{};
-			std::format_to_n(label.data(), label.size(), "Remove##{}", std::size_t(it - m_exclude_patterns.begin()));
-			if (ImGui::SmallButton(label.data())) {
-				m_exclude_patterns.erase(it);
-				set_filter();
-				break;
-			}
-		}
-
-		ImGui::SetNextItemWidth(180.0f);
-		ImGui::InputText("##Add", m_exclude_buf.data(), m_exclude_buf.size());
-		ImGui::SameLine();
-		if (ImGui::SmallButton("Add")) {
-			m_exclude_patterns.emplace_back(m_exclude_buf.data());
-			m_exclude_buf = {};
-			set_filter();
-		}
-		ImGui::TreePop();
-	}
-}
-
 void App::set_filter() {
 	m_filter.exclude_patterns.clear();
-	for (auto const& pattern : m_exclude_patterns) { m_filter.exclude_patterns.push_back(pattern); }
+	m_filter.exclude_patterns.reserve(m_config.exclude_patterns.size());
+	for (auto const& pattern : m_config.exclude_patterns) { m_filter.exclude_patterns.emplace_back(pattern.data()); }
+}
+
+void App::set_config() { m_config.thread_count = m_queue.thread_count(); }
+
+void App::reload(bool const copy_config) {
+	m_queue.drop_enqueued();
+	m_queue.drain_and_wait();
+	m_counter = {};
+
+	if (copy_config) { m_config = m_config_modal.config; }
+
+	m_queue.~Queue();
+	new (&m_queue) ktask::Queue{ktask::QueueCreateInfo{.thread_count = m_config.thread_count}};
+
+	set_filter();
+	set_config();
 }
 } // namespace locc::gui

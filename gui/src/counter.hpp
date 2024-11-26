@@ -37,7 +37,7 @@ class Counter {
 	void set_rows(std::vector<Row> rows);
 	void set_display_rows();
 
-	std::string m_path{};
+	std::string m_path{"Drag a file / directory to start counting"};
 	std::unique_ptr<LineCounter> m_counter{};
 
 	bool m_got_rows{};

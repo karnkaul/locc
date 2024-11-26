@@ -1,4 +1,5 @@
 #pragma once
+#include <config.hpp>
 #include <counter.hpp>
 
 #include <locc/file_filter.hpp>
@@ -30,15 +31,17 @@ class App {
 
 	void update_header();
 	void update_sorting();
-	void update_filter();
 
 	void set_filter();
+	void set_config();
+	void reload(bool copy_config);
 
 	std::unique_ptr<gvdi::Context> m_context{};
 
 	DefaultFileFilter m_filter{};
-	std::vector<std::string> m_exclude_patterns{};
-	std::array<char, 128> m_exclude_buf{};
+
+	Config m_config{};
+	Config::Modal m_config_modal{};
 
 	Counter m_counter{}; // tasks must outlive queue
 

@@ -27,10 +27,7 @@ void Counter::sort_rows() {
 }
 
 void Counter::update() {
-	if (!m_counter) {
-		ImGui::TextUnformatted("Drag a file / directory to start counting");
-		return;
-	}
+	if (!m_counter) { return; }
 
 	update_progress();
 	update_rows();
