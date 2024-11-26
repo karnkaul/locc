@@ -12,7 +12,7 @@ void Config::Modal::open_on_next_update(Config config) {
 }
 
 auto Config::Modal::update() -> bool {
-	auto result = false;
+	auto ret = false;
 
 	if (m_open_popup) {
 		m_open_popup = false;
@@ -26,7 +26,7 @@ auto Config::Modal::update() -> bool {
 		ImGui::Separator();
 
 		if (ImGui::Button("Save")) {
-			result = true;
+			ret = true;
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -37,7 +37,7 @@ auto Config::Modal::update() -> bool {
 		ImGui::EndPopup();
 	}
 
-	return result;
+	return ret;
 }
 
 void Config::Modal::inspect() {
@@ -48,7 +48,7 @@ void Config::Modal::inspect() {
 
 	if (ImGui::BeginListBox("Exclude", {140.0f, 100.0f})) {
 		if (m_selected_exclude && *m_selected_exclude >= config.exclude_patterns.size()) { m_selected_exclude.reset(); }
-		std::string_view const selected = m_selected_exclude ? config.exclude_patterns[*m_selected_exclude].data() : std::string_view{""};
+		std::string_view const selected = m_selected_exclude ? config.exclude_patterns[*m_selected_exclude].data() : "";
 		for (std::size_t i = 0; i < config.exclude_patterns.size(); ++i) {
 			auto const& pattern = config.exclude_patterns[i];
 			if (ImGui::Selectable(pattern.data(), std::string_view{pattern.data()} == selected)) { m_selected_exclude = i; }

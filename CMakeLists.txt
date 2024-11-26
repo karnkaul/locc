@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(locc VERSION "0.2.0")
+project(locc VERSION "0.3.0")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,7 +44,7 @@ if(LOCC_BUILD_CLI AND NOT TARGET clap)
   list(APPEND fetch_targets clap)
 endif()
 
-if(LOCC_BUILD_CLI AND NOT TARGET gvdi)
+if(LOCC_BUILD_GUI AND NOT TARGET gvdi)
   FetchContent_Declare(gvdi
     GIT_REPOSITORY https://github.com/karnkaul/gvdi
     GIT_TAG v0.2.3
