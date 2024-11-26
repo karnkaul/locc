@@ -1,4 +1,5 @@
 #include <app.hpp>
+#include <locc/build_version.hpp>
 #include <cstdlib>
 #include <print>
 
@@ -19,7 +20,9 @@ App::App() : m_instance(m_queue, InstanceCreateInfo{.file_filter = &m_filter}) {
 }
 
 auto App::run() -> int {
-	auto window = gvdi::Context::create_window({640.0f, 360.0f}, "locc");
+	auto buf = CharBuf{};
+	std::format_to_n(buf.data(), buf.size(), "locc v{}", version_v);
+	auto window = gvdi::Context::create_window({640.0f, 360.0f}, buf.data());
 	if (!window) {
 		std::println(stderr, "Failed to create window");
 		return EXIT_FAILURE;
