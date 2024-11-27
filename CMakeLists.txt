@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(locc VERSION "0.2.0")
+project(locc VERSION "0.3.0")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,7 +15,8 @@ endif()
 
 set(FETCHCONTENT_QUIET ${not_top_level})
 
-option(LOCC_BUILD_CLI "Build locc cli" ON)
+option(LOCC_BUILD_CLI "Build locc CLI app" ${PROJECT_IS_TOP_LEVEL})
+option(LOCC_BUILD_GUI "Build locc GUI app" ${PROJECT_IS_TOP_LEVEL})
 option(LOCC_BUILD_TESTS "Build locc tests" ${PROJECT_IS_TOP_LEVEL})
 
 add_library(${PROJECT_NAME}-compile-options INTERFACE)
@@ -32,8 +33,8 @@ set(ext_dir "${CMAKE_CURRENT_SOURCE_DIR}/ext")
 set(fetch_targets "")
 
 if(LOCC_BUILD_CLI AND NOT TARGET clap)
-  set(CLIQ_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
-  set(CLIQ_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
+  set(CLAP_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
+  set(CLAP_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
   FetchContent_Declare(clap
     GIT_REPOSITORY https://github.com/karnkaul/clap
     GIT_TAG v0.5.0
@@ -41,6 +42,16 @@ if(LOCC_BUILD_CLI AND NOT TARGET clap)
     SOURCE_DIR "${ext_dir}/src/clap"
   )
   list(APPEND fetch_targets clap)
+endif()
+
+if(LOCC_BUILD_GUI AND NOT TARGET gvdi)
+  FetchContent_Declare(gvdi
+    GIT_REPOSITORY https://github.com/karnkaul/gvdi
+    GIT_TAG v0.2.3
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/gvdi"
+  )
+  list(APPEND fetch_targets gvdi)
 endif()
 
 if(LOCC_BUILD_TESTS AND NOT TARGET ktest)
@@ -65,7 +76,6 @@ if(NOT TARGET ktask)
 endif()
 
 if(NOT TARGET djson)
-  set(KTASK_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
   FetchContent_Declare(djson
     GIT_REPOSITORY https://github.com/karnkaul/djson
     GIT_TAG v2.1.2
@@ -81,6 +91,10 @@ add_subdirectory(lib)
 
 if(LOCC_BUILD_CLI)
   add_subdirectory(cli)
+endif()
+
+if(LOCC_BUILD_GUI)
+  add_subdirectory(gui)
 endif()
 
 if(LOCC_BUILD_TESTS)

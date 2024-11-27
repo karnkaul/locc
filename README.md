@@ -100,22 +100,23 @@ Pull requests are welcome.
 ### Dependencies
 
 ```
-  locc-cli
-     |
-  ----------------
-  |              |
-locc-lib       clap
-    |
-  --------
-  |      |
-ktask   djson
+   locc-gui   locc-cli
+      |          |
+  ----------  ------------
+  |        |  |          |
+ gvdi    locc-lib      clap
+            |
+        ----------
+        |        |
+      ktask    djson
 ```
 
-`djson` deals with parsing JSONs and is used for grammar IO. `ktask` is a lightweight task execution queue, `locc-lib` enqueues a counter task for each file using it. This _counter_ task is internal to `locc-lib` and not exposed to users. Users utilize a single `locc::LineCounter` wrapper task, which reports progress / status, and supports waiting (blocking) until all individual counters have completed (or if any counter has been dropped). It can be used directly or through a `locc::Instance`. Using the instance is convenient when all line counters use the same grammars and file filters. As is evident, multiple line counters can share the same task queue, which can also have other tasks interleaved.
+`djson` deals with parsing JSONs and is used for grammar IO. `ktask` is a lightweight task execution queue, `locc-lib` enqueues a counter task for each file using it. This _counter_ task is internal to `locc-lib` and not exposed to users. Users utilize a single `locc::LineCounter` wrapper task, which reports progress / status, and supports waiting (blocking) until all individual counters have completed (or if any counter has been dropped). It can be used directly or through a `locc::Instance`. Using the instance is convenient when all line counters use the same grammars and file filters. As is evident, multiple line counters can share the same task queue, which can also have other tasks interleaved in between. Note that after a line counter task starts execution, it will flood the queue with its internal counter subtasks. Any custom tasks enqueued after this line counter task - including another line counter task - will not start executing until the first batch of sub-counters completes execution (unless the number of files to count is less than the number of worker threads).
 
-`clap` is a command line argument parser, which `locc-cli` uses.
+`clap` is a command line argument parser, which `locc-cli` uses. `gvdi` is a GLFW / Dear ImGui / Vulkan lib, which `locc-gui` uses.
 
 * [clap](https://github.com/karnkaul/clap)
+* [gvdi](https://github.com/karnkaul/gvdi)
 * [ktask](https://github.com/karnkaul/ktask)
 * [djson](https://github.com/karnkaul/djson)
 

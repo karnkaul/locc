@@ -16,6 +16,8 @@ class Instance {
 
 	[[nodiscard]] auto start_count(std::string_view path) -> std::unique_ptr<LineCounter>;
 
+	[[nodiscard]] auto get_grammars() const -> std::span<Grammar const> { return m_grammars; }
+
   private:
 	ktask::Queue* m_queue;
 

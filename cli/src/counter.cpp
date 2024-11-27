@@ -54,7 +54,9 @@ void Counter::run() {
 	} else {
 		sort_by_metric(rows, sort_by, sort_dir);
 	}
-	rows.push_back(Row::aggregate(rows));
+	auto totals = Row{.file_type = "Total"};
+	totals.aggregate(rows);
+	rows.push_back(std::move(totals));
 
 	print_rows(rows);
 }

@@ -10,7 +10,7 @@ struct Row {
 	std::string file_type{};
 	LineCount line_count{};
 
-	[[nodiscard]] static auto aggregate(std::span<Row const> rows, std::string file_type = "Total") -> Row;
+	void aggregate(std::span<Row const> rows);
 };
 
 [[nodiscard]] auto beautify(std::uint64_t num) -> std::string;
