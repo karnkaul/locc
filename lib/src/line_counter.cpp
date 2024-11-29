@@ -1,7 +1,7 @@
 #include <locc/count_lines.hpp>
 #include <locc/line_counter.hpp>
 
-#include <ktask/queue.hpp>
+#include <klib/task/queue.hpp>
 #include <lut.hpp>
 #include <algorithm>
 #include <atomic>
@@ -66,7 +66,7 @@ struct File {
 	Grammar const* grammar{};
 };
 
-struct Counter : ktask::Task {
+struct Counter : klib::task::Task {
 	explicit Counter(Workspace& workspace, File file) : m_workspace(workspace), m_file(std::move(file)) { assert(m_file.grammar); }
 
   private:
@@ -82,7 +82,7 @@ struct Counter : ktask::Task {
 } // namespace
 
 struct LineCounter::Impl {
-	explicit Impl(ktask::Queue& queue, Query const& query) : m_queue(queue), m_query(query), m_path(query.path) {}
+	explicit Impl(klib::task::Queue& queue, Query const& query) : m_queue(queue), m_query(query), m_path(query.path) {}
 
 	[[nodiscard]] auto get_progress() const -> AtomicProgress const& { return m_workspace.progress; }
 
@@ -166,7 +166,7 @@ struct LineCounter::Impl {
 		}
 	}
 
-	ktask::Queue& m_queue;
+	klib::task::Queue& m_queue;
 	Query m_query;
 
 	Lut m_lut{};
@@ -174,12 +174,12 @@ struct LineCounter::Impl {
 	fs::path m_path{};
 	std::vector<File> m_files{};
 	std::vector<std::unique_ptr<Counter>> m_counters{};
-	std::vector<ktask::Task*> m_tasks{};
+	std::vector<klib::task::Task*> m_tasks{};
 };
 
 void LineCounter::Deleter::operator()(Impl* ptr) const noexcept { std::default_delete<Impl>{}(ptr); }
 
-LineCounter::LineCounter(ktask::Queue& queue, Query query) {
+LineCounter::LineCounter(klib::task::Queue& queue, Query query) {
 	if (query.grammars.empty()) { return; }
 	if (query.path.empty()) { query.path = "."; }
 	m_impl.reset(new Impl(queue, query)); // NOLINT(cppcoreguidelines-owning-memory)

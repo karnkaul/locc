@@ -143,7 +143,7 @@ void App::reload(bool const copy_config) {
 	if (copy_config) { m_config = m_config_modal.config; }
 
 	m_queue.~Queue();
-	new (&m_queue) ktask::Queue{ktask::QueueCreateInfo{.thread_count = m_config.thread_count}};
+	new (&m_queue) klib::task::Queue{klib::task::QueueCreateInfo{.thread_count = m_config.thread_count}};
 
 	set_filter();
 	set_config();

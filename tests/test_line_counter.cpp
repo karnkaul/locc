@@ -1,6 +1,6 @@
 #include <codes.hpp>
-#include <ktask/queue.hpp>
-#include <ktest/ktest.hpp>
+#include <klib/task/queue.hpp>
+#include <klib/unit_test.hpp>
 #include <locc/line_counter.hpp>
 #include <array>
 #include <filesystem>
@@ -51,12 +51,12 @@ struct File {
 
 struct Fixture {
 	std::vector<Row> rows{};
-	ktask::Queue queue{};
+	klib::task::Queue queue{};
 	std::vector<Grammar> grammars{};
 
 	static auto create(int worker_threads = 2) -> Fixture {
 		return Fixture{
-			.queue = ktask::Queue{ktask::QueueCreateInfo{.thread_count = ktask::ThreadCount(worker_threads)}},
+			.queue = klib::task::Queue{klib::task::QueueCreateInfo{.thread_count = klib::task::ThreadCount(worker_threads)}},
 			.grammars = {Grammar::create(Grammar::Type::CLike), Grammar::create(Grammar::Type::ShellLike)},
 		};
 	}

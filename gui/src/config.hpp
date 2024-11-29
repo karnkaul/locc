@@ -1,6 +1,6 @@
 #pragma once
 #include <char_buf.hpp>
-#include <ktask/queue_create_info.hpp>
+#include <klib/task/queue_create_info.hpp>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -10,7 +10,7 @@ struct Config {
 	class Modal;
 
 	std::vector<CharBuf> exclude_patterns{};
-	ktask::ThreadCount thread_count{};
+	klib::task::ThreadCount thread_count{};
 };
 
 class Config::Modal {

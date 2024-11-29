@@ -26,7 +26,7 @@ constexpr auto to_metric(std::string_view const sort_by) -> LineCount::Metric {
 } // namespace
 
 Counter::Counter(Params const& params, InstanceCreateInfo ici)
-	: m_params(params), m_queue(ktask::QueueCreateInfo{.thread_count = ktask::ThreadCount{params.thread_count}}), m_locc(m_queue, std::move(ici)) {}
+	: m_params(params), m_queue(klib::task::QueueCreateInfo{.thread_count = klib::task::ThreadCount{params.thread_count}}), m_locc(m_queue, std::move(ici)) {}
 
 void Counter::run() {
 	if (m_params.verbose) { print_params(); }

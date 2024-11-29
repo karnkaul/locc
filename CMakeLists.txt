@@ -32,18 +32,6 @@ include(FetchContent)
 set(ext_dir "${CMAKE_CURRENT_SOURCE_DIR}/ext")
 set(fetch_targets "")
 
-if(LOCC_BUILD_CLI AND NOT TARGET clap)
-  set(CLAP_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
-  set(CLAP_BUILD_EXAMPLES ${PROJECT_IS_TOP_LEVEL})
-  FetchContent_Declare(clap
-    GIT_REPOSITORY https://github.com/karnkaul/clap
-    GIT_TAG v0.5.0
-    GIT_SHALLOW TRUE
-    SOURCE_DIR "${ext_dir}/src/clap"
-  )
-  list(APPEND fetch_targets clap)
-endif()
-
 if(LOCC_BUILD_GUI AND NOT TARGET gvdi)
   FetchContent_Declare(gvdi
     GIT_REPOSITORY https://github.com/karnkaul/gvdi
@@ -54,27 +42,6 @@ if(LOCC_BUILD_GUI AND NOT TARGET gvdi)
   list(APPEND fetch_targets gvdi)
 endif()
 
-if(LOCC_BUILD_TESTS AND NOT TARGET ktest)
-  FetchContent_Declare(ktest
-    GIT_REPOSITORY https://github.com/karnkaul/ktest
-    GIT_TAG v0.1.1
-    GIT_SHALLOW TRUE
-    SOURCE_DIR "${ext_dir}/src/ktest"
-  )
-  list(APPEND fetch_targets ktest)
-endif()
-
-if(NOT TARGET ktask)
-  set(KTASK_BUILD_TESTS ${PROJECT_IS_TOP_LEVEL})
-  FetchContent_Declare(ktask
-    GIT_REPOSITORY https://github.com/karnkaul/ktask
-    GIT_TAG v0.2.2
-    GIT_SHALLOW TRUE
-    SOURCE_DIR "${ext_dir}/src/ktask"
-  )
-  list(APPEND fetch_targets ktask)
-endif()
-
 if(NOT TARGET djson)
   FetchContent_Declare(djson
     GIT_REPOSITORY https://github.com/karnkaul/djson
@@ -83,6 +50,16 @@ if(NOT TARGET djson)
     SOURCE_DIR "${ext_dir}/src/djson"
   )
   list(APPEND fetch_targets djson)
+endif()
+
+if(NOT TARGET klib)
+  FetchContent_Declare(klib
+    GIT_REPOSITORY https://github.com/karnkaul/klib
+    GIT_TAG v0.1.0
+    GIT_SHALLOW TRUE
+    SOURCE_DIR "${ext_dir}/src/klib"
+  )
+  list(APPEND fetch_targets klib)
 endif()
 
 FetchContent_MakeAvailable(${fetch_targets})

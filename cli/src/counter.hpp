@@ -1,5 +1,5 @@
 #pragma once
-#include <ktask/queue.hpp>
+#include <klib/task/queue.hpp>
 #include <locc/instance.hpp>
 #include <params.hpp>
 
@@ -19,7 +19,7 @@ struct Counter {
 	static constexpr std::size_t progress_bar_length_v{20};
 
 	Params m_params;
-	ktask::Queue m_queue;
+	klib::task::Queue m_queue;
 	Instance m_locc;
 
 	std::string m_progress_bar{};
