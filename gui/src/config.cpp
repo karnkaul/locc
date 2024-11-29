@@ -48,10 +48,10 @@ void Config::Modal::inspect() {
 
 	if (ImGui::BeginListBox("Exclude", {140.0f, 100.0f})) {
 		if (m_selected_exclude && *m_selected_exclude >= config.exclude_patterns.size()) { m_selected_exclude.reset(); }
-		std::string_view const selected = m_selected_exclude ? config.exclude_patterns[*m_selected_exclude].data() : "";
+		std::string_view const selected = m_selected_exclude ? config.exclude_patterns[*m_selected_exclude] : "";
 		for (std::size_t i = 0; i < config.exclude_patterns.size(); ++i) {
 			auto const& pattern = config.exclude_patterns[i];
-			if (ImGui::Selectable(pattern.data(), std::string_view{pattern.data()} == selected)) { m_selected_exclude = i; }
+			if (ImGui::Selectable(pattern.c_str(), pattern == selected)) { m_selected_exclude = i; }
 		}
 		ImGui::EndListBox();
 	}
@@ -65,7 +65,7 @@ void Config::Modal::inspect() {
 	ImGui::InputText("##Add", m_exclude_buf.data(), m_exclude_buf.size());
 	ImGui::SameLine();
 	if (ImGui::SmallButton("Add")) {
-		config.exclude_patterns.push_back(m_exclude_buf);
+		config.exclude_patterns.emplace_back(m_exclude_buf.data());
 		m_exclude_buf = {};
 	}
 }
