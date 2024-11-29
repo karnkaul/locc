@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(locc VERSION "0.3.0")
+project(locc VERSION "0.4.0")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
