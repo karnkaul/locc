@@ -56,7 +56,7 @@ if(NOT TARGET klib)
   set(KLIB_BUILD_TESTS ON)
   FetchContent_Declare(klib
     GIT_REPOSITORY https://github.com/karnkaul/klib
-    GIT_TAG v0.1.0
+    GIT_TAG v0.1.2
     GIT_SHALLOW TRUE
     SOURCE_DIR "${ext_dir}/src/klib"
   )

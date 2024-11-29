@@ -26,7 +26,7 @@ struct Csv {
 } // namespace
 
 auto App::run(int const argc, char const* const* argv) -> int {
-	m_params.thread_count = std::uint8_t(klib::task::Queue::get_max_threads());
+	m_params.thread_count = std::uint8_t(klib::task::get_max_threads());
 
 	auto default_grammars = false;
 
@@ -39,7 +39,7 @@ auto App::run(int const argc, char const* const* argv) -> int {
 		klib::args::flag(m_params.no_progress, "p,no-progress", "do not print progress while counting"),
 		klib::args::flag(default_grammars, "default-grammars", "output default grammars as JSON and exit"),
 		klib::args::flag(m_params.verbose, "v,verbose", "verbose output"),
-		klib::args::positional(m_params.path, klib::args::ArgType::Optional, "path", "path to count for"),
+		klib::args::positional(m_params.path, klib::args::optional_v, "path", "path to count for"),
 	};
 
 	auto const info = klib::args::ParseInfo{
@@ -47,7 +47,7 @@ auto App::run(int const argc, char const* const* argv) -> int {
 		.version = locc::version_v,
 	};
 
-	auto const parse_result = klib::args::parse_args(info, args, argc, argv);
+	auto const parse_result = klib::args::parse(info, args, argc, argv);
 	if (parse_result.early_return()) { return parse_result.get_return_code(); }
 
 	if (default_grammars) {
