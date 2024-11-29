@@ -19,6 +19,5 @@ target_sources(${exe_name} PRIVATE
   src/config.hpp
   src/counter.cpp
   src/counter.hpp
-  src/im_text.hpp
   src/main.cpp
 )
