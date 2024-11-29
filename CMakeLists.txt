@@ -53,6 +53,7 @@ if(NOT TARGET djson)
 endif()
 
 if(NOT TARGET klib)
+  set(KLIB_BUILD_TESTS ON)
   FetchContent_Declare(klib
     GIT_REPOSITORY https://github.com/karnkaul/klib
     GIT_TAG v0.1.0
