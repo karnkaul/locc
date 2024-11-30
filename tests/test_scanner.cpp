@@ -1,4 +1,4 @@
-#include <ktest/ktest.hpp>
+#include <klib/unit_test.hpp>
 #include <scanner.hpp>
 
 namespace {

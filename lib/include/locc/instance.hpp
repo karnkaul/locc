@@ -1,5 +1,5 @@
 #pragma once
-#include <ktask/queue_fwd.hpp>
+#include <klib/task/queue_fwd.hpp>
 #include <locc/line_counter.hpp>
 
 namespace locc {
@@ -12,14 +12,14 @@ class Instance {
   public:
 	using CreateInfo = InstanceCreateInfo;
 
-	explicit Instance(ktask::Queue& queue, CreateInfo create_info = {});
+	explicit Instance(klib::task::Queue& queue, CreateInfo create_info = {});
 
 	[[nodiscard]] auto start_count(std::string_view path) -> std::unique_ptr<LineCounter>;
 
 	[[nodiscard]] auto get_grammars() const -> std::span<Grammar const> { return m_grammars; }
 
   private:
-	ktask::Queue* m_queue;
+	klib::task::Queue* m_queue;
 
 	std::vector<Grammar> m_grammars;
 	IFileFilter const* m_filter;

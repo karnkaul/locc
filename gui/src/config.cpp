@@ -1,10 +1,10 @@
 #include <imgui.h>
 #include <config.hpp>
-#include <ktask/queue.hpp>
+#include <klib/task/queue.hpp>
 #include <cstring>
 
 namespace locc::gui {
-Config::Modal::Modal() : m_thread_count(int(ktask::Queue::get_max_threads())) {}
+Config::Modal::Modal() : m_thread_count(int(klib::task::get_max_threads())) {}
 
 void Config::Modal::open_on_next_update(Config config) {
 	this->config = std::move(config);
@@ -41,17 +41,17 @@ auto Config::Modal::update() -> bool {
 }
 
 void Config::Modal::inspect() {
-	auto const max_threads = int(ktask::Queue::get_max_threads());
+	auto const max_threads = int(klib::task::get_max_threads());
 	m_thread_count = int(config.thread_count);
 	ImGui::SetNextItemWidth(140.0f);
-	if (ImGui::SliderInt("Threads", &m_thread_count, 2, max_threads)) { config.thread_count = ktask::ThreadCount(m_thread_count); }
+	if (ImGui::SliderInt("Threads", &m_thread_count, 2, max_threads)) { config.thread_count = klib::task::ThreadCount(m_thread_count); }
 
 	if (ImGui::BeginListBox("Exclude", {140.0f, 100.0f})) {
 		if (m_selected_exclude && *m_selected_exclude >= config.exclude_patterns.size()) { m_selected_exclude.reset(); }
-		std::string_view const selected = m_selected_exclude ? config.exclude_patterns[*m_selected_exclude].data() : "";
+		std::string_view const selected = m_selected_exclude ? config.exclude_patterns[*m_selected_exclude] : "";
 		for (std::size_t i = 0; i < config.exclude_patterns.size(); ++i) {
 			auto const& pattern = config.exclude_patterns[i];
-			if (ImGui::Selectable(pattern.data(), std::string_view{pattern.data()} == selected)) { m_selected_exclude = i; }
+			if (ImGui::Selectable(pattern.c_str(), pattern == selected)) { m_selected_exclude = i; }
 		}
 		ImGui::EndListBox();
 	}
@@ -65,7 +65,7 @@ void Config::Modal::inspect() {
 	ImGui::InputText("##Add", m_exclude_buf.data(), m_exclude_buf.size());
 	ImGui::SameLine();
 	if (ImGui::SmallButton("Add")) {
-		config.exclude_patterns.push_back(m_exclude_buf);
+		config.exclude_patterns.emplace_back(m_exclude_buf.data());
 		m_exclude_buf = {};
 	}
 }

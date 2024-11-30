@@ -1,5 +1,6 @@
 #include <counter.hpp>
-#include <im_text.hpp>
+
+#include <klib/fixed_string.hpp>
 
 #include <imgui.h>
 
@@ -36,7 +37,7 @@ void Counter::update() {
 void Counter::update_progress() {
 	if (!show_progress) { return; }
 	auto const progress = m_counter->get_progress();
-	im_text("Status: {}", to_str(progress.state));
+	ImGui::TextUnformatted(klib::FixedString{"Status: {}", to_str(progress.state)}.c_str());
 	m_progress_overlay.clear();
 	std::format_to(std::back_inserter(m_progress_overlay), "[{}/{}]", progress.counted, progress.total);
 	ImGui::SetNextItemWidth(-1.0f);
@@ -52,11 +53,11 @@ void Counter::update_rows() {
 	auto const update_row = [](DisplayRow const& row) {
 		ImGui::TableNextRow();
 		ImGui::TableSetColumnIndex(0);
-		im_text("{}", row.name);
+		ImGui::TextUnformatted(klib::FixedString{"{}", row.name}.c_str());
 		for (std::size_t i = 0; i < LineCount::COUNT_; ++i) {
 			auto const& metric = row.metrics[i]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 			ImGui::TableSetColumnIndex(int(i) + 1);
-			im_text("{}", metric);
+			ImGui::TextUnformatted(klib::FixedString{"{}", metric}.c_str());
 		}
 	};
 

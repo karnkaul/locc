@@ -1,5 +1,5 @@
 #include <codes.hpp>
-#include <ktest/ktest.hpp>
+#include <klib/unit_test.hpp>
 #include <locc/count_lines.hpp>
 #include <sstream>
 

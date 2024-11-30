@@ -4,7 +4,7 @@ add_library(${lib_name})
 add_library(${PROJECT_NAME}::${lib_name} ALIAS ${lib_name})
 
 target_link_libraries(${lib_name} PUBLIC
-  ktask::ktask
+  klib::klib
   djson::djson
 )
 

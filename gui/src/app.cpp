@@ -14,15 +14,14 @@ namespace {
 
 App::App() : m_instance(m_queue, InstanceCreateInfo{.file_filter = &m_filter}) {
 	m_config.exclude_patterns.reserve(m_filter.exclude_patterns.size());
-	for (auto const pattern : m_filter.exclude_patterns) { copy_to(m_config.exclude_patterns.emplace_back(), pattern); }
+	for (auto const pattern : m_filter.exclude_patterns) { m_config.exclude_patterns.emplace_back(pattern); }
 	set_filter();
 	set_config();
 }
 
 auto App::run() -> int {
-	auto buf = CharBuf{};
-	std::format_to_n(buf.data(), buf.size(), "locc v{}", version_v);
-	auto window = gvdi::Context::create_window({640.0f, 360.0f}, buf.data());
+	auto const title = klib::FixedString{"locc v{}", version_v};
+	auto window = gvdi::Context::create_window({640.0f, 360.0f}, title.c_str());
 	if (!window) {
 		std::println(stderr, "Failed to create window");
 		return EXIT_FAILURE;
@@ -130,7 +129,7 @@ void App::update_sorting() {
 void App::set_filter() {
 	m_filter.exclude_patterns.clear();
 	m_filter.exclude_patterns.reserve(m_config.exclude_patterns.size());
-	for (auto const& pattern : m_config.exclude_patterns) { m_filter.exclude_patterns.emplace_back(pattern.data()); }
+	for (auto const& pattern : m_config.exclude_patterns) { m_filter.exclude_patterns.emplace_back(pattern); }
 }
 
 void App::set_config() { m_config.thread_count = m_queue.thread_count(); }
@@ -143,7 +142,7 @@ void App::reload(bool const copy_config) {
 	if (copy_config) { m_config = m_config_modal.config; }
 
 	m_queue.~Queue();
-	new (&m_queue) ktask::Queue{ktask::QueueCreateInfo{.thread_count = m_config.thread_count}};
+	new (&m_queue) klib::task::Queue{klib::task::QueueCreateInfo{.thread_count = m_config.thread_count}};
 
 	set_filter();
 	set_config();

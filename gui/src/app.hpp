@@ -6,7 +6,7 @@
 #include <locc/instance.hpp>
 
 #include <gvdi/context.hpp>
-#include <ktask/queue.hpp>
+#include <klib/task/queue.hpp>
 
 #include <memory>
 
@@ -45,7 +45,7 @@ class App {
 
 	Counter m_counter{}; // tasks must outlive queue
 
-	ktask::Queue m_queue{};
+	klib::task::Queue m_queue{};
 	Instance m_instance;
 };
 } // namespace locc::gui

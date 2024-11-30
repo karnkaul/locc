@@ -1,6 +1,6 @@
 #pragma once
-#include <ktask/queue_fwd.hpp>
-#include <ktask/task.hpp>
+#include <klib/task/queue_fwd.hpp>
+#include <klib/task/task.hpp>
 #include <locc/grammar.hpp>
 #include <locc/progress.hpp>
 #include <locc/query.hpp>
@@ -8,9 +8,9 @@
 #include <memory>
 
 namespace locc {
-class LineCounter : public ktask::Task {
+class LineCounter : public klib::task::Task {
   public:
-	explicit LineCounter(ktask::Queue& queue, Query query);
+	explicit LineCounter(klib::task::Queue& queue, Query query);
 
 	[[nodiscard]] auto get_progress() const -> Progress;
 	[[nodiscard]] auto to_rows() const -> std::vector<Row>;
