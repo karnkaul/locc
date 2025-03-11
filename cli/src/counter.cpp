@@ -1,4 +1,5 @@
 #include <counter.hpp>
+#include <klib/text_table.hpp>
 #include <table.hpp>
 #include <print>
 #include <thread>
@@ -7,8 +8,19 @@ namespace locc::cli {
 namespace {
 void print_rows(std::span<Row const> rows) {
 	std::println();
-	auto table = Table{};
-	for (auto const& row : rows) { table.add_row(row); }
+	auto builder = klib::TextTable::Builder{};
+	builder.add_column("File Type");
+	for (auto i = LineCount::Metric{}; i < LineCount::Metric::COUNT_; i = LineCount::Metric(int(i + 1))) {
+		builder.add_column(std::string{metric_name_v.at(i)}, klib::TextTable::Align::Right);
+	}
+	auto table_row = std::vector<std::string>{};
+	auto table = builder.build();
+	for (auto const& row : rows) {
+		table_row.clear();
+		table_row.push_back(row.file_type);
+		for (auto const metric : row.line_count.metrics) { table_row.push_back(beautify(metric)); }
+		table.push_row(std::move(table_row));
+	}
 	std::println("{}", table.serialize());
 }
 
