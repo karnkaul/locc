@@ -21,7 +21,7 @@ jobs:
       - name: install
         run: |
             cmake --install build --config=Release --prefix=.
-            tar -acf x64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc
+            tar -acf x64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc-cli
       - name: release
         uses: softprops/action-gh-release@v2.3.4
         with:
@@ -45,7 +45,7 @@ jobs:
       - name: install
         run: |
             cmake --install build --config=Release --prefix=.
-            tar -acf arm64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc
+            tar -acf arm64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc-cli
       - name: release
         uses: softprops/action-gh-release@v2.3.4
         with:
@@ -64,7 +64,7 @@ jobs:
       - name: install
         run: |
             cmake --install build --config=Release --prefix=.
-            tar -acf x64-windows-locc-${{ github.ref_name }}.zip bin/locc.exe
+            tar -acf x64-windows-locc-${{ github.ref_name }}.zip bin/locc-cli.exe
       - name: release
         uses: softprops/action-gh-release@v2.3.4
         with:
