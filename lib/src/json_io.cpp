@@ -3,7 +3,7 @@
 namespace {
 template <typename Type>
 void fill(std::vector<Type>& out, dj::Json const& arr) {
-	auto const& av = arr.array_view();
+	auto const av = arr.as_array();
 	out.reserve(av.size());
 	for (auto const& in : av) {
 		auto t = Type{};

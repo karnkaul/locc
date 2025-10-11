@@ -1,7 +1,5 @@
 #include <app.hpp>
 #include <locc/build_version.hpp>
-#include <cstdlib>
-#include <print>
 
 namespace locc::gui {
 namespace {
@@ -19,46 +17,29 @@ App::App() : m_instance(m_queue, InstanceCreateInfo{.file_filter = &m_filter}) {
 	set_config();
 }
 
-auto App::run() -> int {
+auto App::create_window() -> GLFWwindow* {
 	auto const title = klib::FixedString{"locc v{}", version_v};
-	auto window = gvdi::Context::create_window({640.0f, 360.0f}, title.c_str());
-	if (!window) {
-		std::println(stderr, "Failed to create window");
-		return EXIT_FAILURE;
-	}
+	auto* ret = glfwCreateWindow(640, 360, title.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(ret, this);
 
-	if (!create_context(std::move(window))) {
-		std::println(stderr, "Failed to create gvdi Context");
-		return EXIT_FAILURE;
-	}
-
-	while (m_context->next_frame()) {
-		update();
-		m_context->render({0.0f, 0.0f, 0.0f, 0.0f});
-	}
-
-	m_queue.drop_enqueued();
-	m_queue.drain_and_wait();
-
-	return EXIT_SUCCESS;
-}
-
-auto App::create_context(gvdi::UniqueWindow window) -> bool {
-	glfwSetWindowUserPointer(window.get(), this);
-
-	glfwSetDropCallback(window.get(), [](GLFWwindow* w, int const count, char const** paths) { self(w).on_drop({paths, std::size_t(count)}); });
-	glfwSetKeyCallback(window.get(), [](GLFWwindow* w, int key, int /*code*/, int action, int mods) {
+	glfwSetDropCallback(ret, [](GLFWwindow* w, int const count, char const** paths) { self(w).on_drop({paths, std::size_t(count)}); });
+	glfwSetKeyCallback(ret, [](GLFWwindow* w, int key, int /*code*/, int action, int mods) {
 		if (key == GLFW_KEY_C && action == GLFW_RELEASE && mods == 0) { self(w).m_config_modal.open_on_next_update(self(w).m_config); }
 	});
 
-	try {
-		m_context = std::make_unique<gvdi::Context>(std::move(window));
-	} catch (std::exception const& e) {
-		std::println("FATAL: {}", e.what());
-		return false;
-	}
+	return ret;
+}
 
-	return true;
+void App::post_run() {
+	m_queue.drop_enqueued();
+	m_queue.drain_and_wait();
+}
+
+auto App::framebuffer_size() const -> ImVec2 {
+	auto width = int{};
+	auto height = int{};
+	glfwGetWindowSize(get_window(), &width, &height);
+	return ImVec2{float(width), float(height)};
 }
 
 void App::on_drop(std::span<char const*> paths) {
@@ -76,7 +57,7 @@ void App::on_drop(std::span<char const*> paths) {
 }
 
 void App::update() {
-	ImGui::SetNextWindowSize(m_context->get_framebuffer_size(), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(framebuffer_size(), ImGuiCond_Always);
 	ImGui::SetNextWindowPos({}, ImGuiCond_Always);
 	static constexpr auto main_flags_v = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground |
 										 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus;

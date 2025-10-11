@@ -1,17 +1,16 @@
-set(exe_name ${PROJECT_NAME}-cli)
+set(package_name ${PROJECT_NAME}-cli)
 
-add_executable(${exe_name})
+add_executable(${package_name})
 
-target_link_libraries(${exe_name} PRIVATE
+target_link_libraries(${package_name} PRIVATE
   ${PROJECT_NAME}::${PROJECT_NAME}-lib
-  ${PROJECT_NAME}::${PROJECT_NAME}-compile-options
 )
 
-target_include_directories(${exe_name} PRIVATE
+target_include_directories(${package_name} PRIVATE
   src
 )
 
-target_sources(${exe_name} PRIVATE
+target_sources(${package_name} PRIVATE
   src/app.cpp
   src/app.hpp
   src/counter.cpp
@@ -21,3 +20,7 @@ target_sources(${exe_name} PRIVATE
   src/table.cpp
   src/table.hpp
 )
+
+message(STATUS "[${package_name}] setting up install")
+include(GNUInstallDirs)
+install(TARGETS ${package_name})

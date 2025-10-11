@@ -1,46 +1,135 @@
-name: ci-push
-on: [push]
+name: ci-pr
+on: [pull_request, workflow_dispatch]
 jobs:
-  build-linux:
-    runs-on: ubuntu-24.04
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: format code
+        run: scripts/format_code.sh
+      - name: check diff
+        run: .github/format_check_diff.sh
+  x64-linux-gcc:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: init
         run: |
-          sudo apt update -yqq && sudo apt install -yqq ninja-build gcc-14 xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
-      - name: configure gcc
-        run: cmake -S . --preset=default -B build
-      - name: configure clang
-        run: cmake -S . --preset=ninja-clang -B clang
-      - name: build gcc debug
-        run: cmake --build build --config=Debug
-      - name: build gcc release
-        run: cmake --build build --config=Release
-      - name: build clang debug
-        run: cmake --build clang --config=Debug
-      - name: build clang release
-        run: cmake --build clang --config=Release
-      - name: test gcc debug
-        run: cd build && ctest -C Debug
-      - name: test gcc release
-        run: cd build && ctest -C Release
-      - name: test clang debug
-        run: cd clang && ctest -C Debug
-      - name: test clang release
-        run: cd clang && ctest -C Release
-  build-windows:
-    runs-on: windows-latest
+            uname -m
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 10
+            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 10
+            sudo apt update -yqq && sudo apt install -yqq mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
+      - name: configure
+        run: cmake -S . --preset=ninja-gcc -B build -DGLFW_BUILD_X11=OFF
+      - name: build debug
+        run: cmake --build build --config=Debug -- -v
+      - name: build release
+        run: cmake --build build --config=Release -- -v
+      - name: test debug
+        run: cd build && ctest -V -C Debug
+      - name: test release
+        run: cd build && ctest -V -C Release
+  x64-linux-clang:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: init
+        run: |
+            uname -m
+            sudo apt update -yqq && sudo apt install -yqq clang-20 mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
+            sudo update-alternatives --remove-all clang++
+            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 10
+            sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 10
+      - name: configure
+        run: cmake -S . --preset=ninja-clang -B build -DGLFW_BUILD_X11=OFF
+      - name: build debug
+        run: cmake --build build --config=Debug -- -v
+      - name: build release
+        run: cmake --build build --config=Release -- -v
+      - name: test debug
+        run: cd build && ctest -V -C Debug
+      - name: test release
+        run: cd build && ctest -V -C Release
+  arm64-linux-gcc:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: init
+        run: |
+            uname -m
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 10
+            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 10
+            sudo apt update -yqq && sudo apt install -yqq mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
+      - name: configure
+        run: cmake -S . --preset=ninja-gcc -B build -DGLFW_BUILD_X11=OFF
+      - name: build debug
+        run: cmake --build build --config=Debug -- -v
+      - name: build release
+        run: cmake --build build --config=Release -- -v
+      - name: test debug
+        run: cd build && ctest -V -C Debug
+      - name: test release
+        run: cd build && ctest -V -C Release
+  arm64-linux-clang:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: init
+        run: |
+            uname -m
+            sudo apt update -yqq && sudo apt install -yqq clang-20 mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
+            sudo update-alternatives --remove-all clang++
+            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 10
+            sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 10
+      - name: configure
+        run: cmake -S . --preset=ninja-clang -B build -DGLFW_BUILD_X11=OFF
+      - name: build debug
+        run: cmake --build build --config=Debug -- -v
+      - name: build release
+        run: cmake --build build --config=Release -- -v
+      - name: test debug
+        run: cd build && ctest -V -C Debug
+      - name: test release
+        run: cd build && ctest -V -C Release
+  x64-windows-vs22:
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
       - name: configure
         run: cmake -S . --preset=vs22 -B build
       - name: build debug
-        run: cmake --build build --config=Debug
+        run: cmake --build build --config=Debug --parallel
       - name: build release
-        run: cmake --build build --config=Release
+        run: cmake --build build --config=Release --parallel
       - name: test debug
-        run: cd build && ctest -C Debug
+        run: cd build && ctest -V -C Debug
       - name: test release
-        run: cd build && ctest -C Release
+        run: cd build && ctest -V -C Release
+  x64-windows-clang:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - name: configure
+        run: cmake -S . --preset=ninja-clang -B build
+      - name: build debug
+        run: cmake --build build --config=Debug -- -v
+      - name: build release
+        run: cmake --build build --config=Release -- -v
+      - name: test debug
+        run: cd build && ctest -V -C Debug
+      - name: test release
+        run: cd build && ctest -V -C Release
+  x64-mingw-gcc:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - name: configure
+        run: cmake -S . --preset=ninja-gcc -B build
+      - name: build debug
+        run: cmake --build build --config=Debug -- -v
+      - name: build release
+        run: cmake --build build --config=Release -- -v
+      - name: test debug
+        run: cd build && ctest -V -C Debug
+      - name: test release
+        run: cd build && ctest -V -C Release
