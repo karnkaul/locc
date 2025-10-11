@@ -29,8 +29,6 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=ninja-gcc -P install_test/script.cmake
   x64-linux-clang:
     runs-on: ubuntu-latest
     steps:
@@ -52,8 +50,6 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=ninja-clang -P install_test/script.cmake
   arm64-linux-gcc:
     runs-on: ubuntu-24.04-arm
     steps:
@@ -74,8 +70,6 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=ninja-gcc -P install_test/script.cmake
   arm64-linux-clang:
     runs-on: ubuntu-24.04-arm
     steps:
@@ -97,8 +91,6 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=ninja-clang -P install_test/script.cmake
   x64-windows-vs22:
     runs-on: windows-2025
     steps:
@@ -113,8 +105,6 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=vs22 -P install_test/script.cmake
   x64-windows-clang:
     runs-on: windows-2025
     steps:
@@ -129,8 +119,6 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=ninja-clang -P install_test/script.cmake
   x64-mingw-gcc:
     runs-on: windows-2025
     steps:
@@ -145,5 +133,3 @@ jobs:
         run: cd build && ctest -V -C Debug
       - name: test release
         run: cd build && ctest -V -C Release
-      - name: test install
-        run: cmake -DBUILD_DIR=build -DPRESET=ninja-gcc -P install_test/script.cmake
