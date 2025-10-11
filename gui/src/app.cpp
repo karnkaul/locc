@@ -1,7 +1,5 @@
 #include <app.hpp>
 #include <locc/build_version.hpp>
-#include <cstdlib>
-#include <print>
 
 namespace locc::gui {
 namespace {
