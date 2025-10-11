@@ -18,8 +18,9 @@ jobs:
             uname -m
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 10
             sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 10
+            sudo apt update -yqq && sudo apt install -yqq mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
       - name: configure
-        run: cmake -S . --preset=ninja-gcc -B build
+        run: cmake -S . --preset=ninja-gcc -B build -DGLFW_BUILD_X11=OFF
       - name: build debug
         run: cmake --build build --config=Debug -- -v
       - name: build release
@@ -37,12 +38,12 @@ jobs:
       - name: init
         run: |
             uname -m
-            sudo apt update -yqq && sudo apt install -yqq clang-20
+            sudo apt update -yqq && sudo apt install -yqq clang-20 mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
             sudo update-alternatives --remove-all clang++
             sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 10
             sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 10
       - name: configure
-        run: cmake -S . --preset=ninja-clang -B build
+        run: cmake -S . --preset=ninja-clang -B build -DGLFW_BUILD_X11=OFF
       - name: build debug
         run: cmake --build build --config=Debug -- -v
       - name: build release
@@ -62,8 +63,9 @@ jobs:
             uname -m
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 10
             sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 10
+            sudo apt update -yqq && sudo apt install -yqq mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
       - name: configure
-        run: cmake -S . --preset=ninja-gcc -B build
+        run: cmake -S . --preset=ninja-gcc -B build -DGLFW_BUILD_X11=OFF
       - name: build debug
         run: cmake --build build --config=Debug -- -v
       - name: build release
@@ -81,12 +83,12 @@ jobs:
       - name: init
         run: |
             uname -m
-            sudo apt update -yqq && sudo apt install -yqq clang-20
+            sudo apt update -yqq && sudo apt install -yqq clang-20 mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
             sudo update-alternatives --remove-all clang++
             sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 10
             sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 10
       - name: configure
-        run: cmake -S . --preset=ninja-clang -B build
+        run: cmake -S . --preset=ninja-clang -B build -DGLFW_BUILD_X11=OFF
       - name: build debug
         run: cmake --build build --config=Debug -- -v
       - name: build release
