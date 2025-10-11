@@ -8,10 +8,6 @@ target_link_libraries(${lib_name} PUBLIC
   djson::djson
 )
 
-target_link_libraries(${lib_name} PRIVATE
-  ${PROJECT_NAME}::${PROJECT_NAME}-compile-options
-)
-
 target_compile_features(${lib_name} PUBLIC
   cxx_std_23
 )

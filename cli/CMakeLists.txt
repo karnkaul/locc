@@ -4,7 +4,6 @@ add_executable(${exe_name})
 
 target_link_libraries(${exe_name} PRIVATE
   ${PROJECT_NAME}::${PROJECT_NAME}-lib
-  ${PROJECT_NAME}::${PROJECT_NAME}-compile-options
 )
 
 target_include_directories(${exe_name} PRIVATE

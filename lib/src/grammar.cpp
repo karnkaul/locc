@@ -1,6 +1,7 @@
 #include <locc/grammar.hpp>
 #include <locc/json_io.hpp>
 #include <cassert>
+#include <format>
 
 namespace locc {
 namespace {
@@ -95,13 +96,13 @@ auto locc::get_default_grammars() -> std::vector<Grammar> const& {
 auto locc::serialize_default_grammars() -> std::string {
 	auto json = dj::Json{};
 	for (auto const& grammar : get_default_grammars()) { to_json(json.push_back({}), grammar); }
-	return json.serialized();
+	return std::format("{}", json);
 }
 
 auto locc::load_grammars_into(std::vector<Grammar>& out, char const* path_to_json) -> std::size_t {
 	auto const json = dj::Json::from_file(path_to_json);
 	if (!json) { return 0; }
-	auto const& grammars = json.array_view();
+	auto const grammars = json->as_array();
 	out.reserve(out.size() + grammars.size());
 	for (auto const& in_g : grammars) {
 		auto out_g = Grammar{};

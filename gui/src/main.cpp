@@ -3,7 +3,7 @@
 
 auto main() -> int {
 	try {
-		return locc::gui::App{}.run();
+		locc::gui::App{}.run();
 	} catch (std::exception const& e) {
 		std::println(stderr, "PANIC: {}", e.what());
 		return EXIT_FAILURE;
