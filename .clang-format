@@ -18,13 +18,13 @@ AllowShortIfStatementsOnASingleLine: Always
 AllowShortLoopsOnASingleLine: true
 IndentRequires: true
 IncludeCategories:
-    # Headers in <> with .h extension.
-    - Regex: '<([A-Za-z0-9\/-_])+\.h>'
+    # Headers in "" with a file extension.
+    - Regex: '"([A-Za-z0-9\/-_])+\..*"'
       Priority: 10
-    # Headers in <> with .hpp extension.
-    - Regex: '<([A-Za-z0-9\/-_])+\.hpp>'
+    # Headers in <> with a file extension.
+    - Regex: '<([A-Za-z0-9\/-_])+\..*>'
       Priority: 20
-    # Headers in <> without extension.
+    # Headers in <> without a file extension.
     - Regex: '<([A-Za-z0-9\/-_])+>'
       Priority: 30
 PointerAlignment: Left

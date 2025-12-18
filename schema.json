@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Schema definitions for locc types",
+  "definitions": {
+    "line_comment": {
+      "type": "object",
+      "description": "Definition of a line comment",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token"
+      ]
+    },
+    "block_comment": {
+      "type": "object",
+      "description": "Definition of a block comment",
+      "properties": {
+        "open": {
+          "type": "string"
+        },
+        "close": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "open",
+        "close"
+      ]
+    },
+    "alphabet": {
+      "type": "object",
+      "description": "Definition of an Alphabet",
+      "properties": {
+        "line_comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/line_comment"
+          }
+        },
+        "block_comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/block_comment"
+          }
+        }
+      }
+    },
+    "category": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Category name"
+        },
+        "file_extensions": {
+          "type": "array",
+          "description": "List of matching file extensions",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exact_filenames": {
+          "type": "array",
+          "description": "List of matching filenames",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "code_family": {
+      "type": "object",
+      "description": "Definition of a Code Family",
+      "properties": {
+        "alphabet": {
+          "$ref": "#/definitions/alphabet"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/category"
+          },
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "type": "object",
+  "description": "JSON listing custom Specification",
+  "properties": {
+    "code_families": {
+      "type": "array",
+      "description": "List of Code Families",
+      "items": {
+        "$ref": "#/definitions/code_family"
+      }
+    },
+    "text_categories": {
+      "type": "array",
+      "description": "List of text Categories",
+      "items": {
+        "$ref": "#/definitions/category"
+      }
+    },
+    "exclude_suffixes": {
+      "type": "array",
+      "description": "List of exclude suffixes",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -14,15 +14,14 @@ jobs:
             uname -m
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 10
             sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 10
-            sudo apt update -yqq && sudo apt install -yqq mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev
       - name: configure
-        run: cmake -S . --preset=ninja-gcc -B build -DLOCC_BUILD_TESTS=OFF -DLOCC_BUILD_GUI=OFF
+        run: cmake -S . --preset=ninja-gcc -B build
       - name: build release
         run: cmake --build build --config=Release -- -v
       - name: install
         run: |
             cmake --install build --config=Release --prefix=.
-            tar -acf x64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc-cli
+            tar -acf x64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc
       - name: release
         uses: softprops/action-gh-release@v2.3.4
         with:
@@ -39,15 +38,14 @@ jobs:
             uname -m
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 10
             sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 10
-            sudo apt update -yqq && sudo apt install -yqq mesa-common-dev libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev
       - name: configure
-        run: cmake -S . --preset=ninja-gcc -B build -DLOCC_BUILD_TESTS=OFF -DLOCC_BUILD_GUI=OFF
+        run: cmake -S . --preset=ninja-gcc -B build
       - name: build release
         run: cmake --build build --config=Release -- -v
       - name: install
         run: |
             cmake --install build --config=Release --prefix=.
-            tar -acf arm64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc-cli
+            tar -acf arm64-linux-locc-${{ github.ref_name }}.tar.xz bin/locc
       - name: release
         uses: softprops/action-gh-release@v2.3.4
         with:
@@ -60,13 +58,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: configure
-        run: cmake -S . --preset=ninja-clang -B build -DLOCC_BUILD_TESTS=OFF -DLOCC_BUILD_GUI=OFF
+        run: cmake -S . --preset=ninja-clang -B build
       - name: build release
         run: cmake --build build --config=Release -- -v
       - name: install
         run: |
             cmake --install build --config=Release --prefix=.
-            tar -acf x64-windows-locc-${{ github.ref_name }}.zip bin/locc-cli.exe
+            tar -acf x64-windows-locc-${{ github.ref_name }}.zip bin/locc.exe
       - name: release
         uses: softprops/action-gh-release@v2.3.4
         with:

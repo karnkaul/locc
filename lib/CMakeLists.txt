@@ -1,55 +1,36 @@
-set(lib_name ${PROJECT_NAME}-lib)
+project(${package_name}-lib VERSION ${package_version})
 
-add_library(${lib_name})
-add_library(${PROJECT_NAME}::${lib_name} ALIAS ${lib_name})
+add_library(${PROJECT_NAME})
+add_library(${package_name}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_link_libraries(${lib_name} PUBLIC
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
   klib::klib
   djson::djson
 )
 
-target_compile_features(${lib_name} PUBLIC
-  cxx_std_23
-)
-
-target_include_directories(${lib_name} PRIVATE
+target_include_directories(${PROJECT_NAME} PRIVATE
   src
 )
 
-target_sources(${lib_name} PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
-  include/locc/count_lines.hpp
-  include/locc/file_filter.hpp
-  include/locc/grammar.hpp
-  include/locc/instance.hpp
-  include/locc/json_io.hpp
-  include/locc/line_count.hpp
-  include/locc/line_counter.hpp
-  include/locc/progress.hpp
-  include/locc/query.hpp
-  include/locc/row.hpp
+set(version_header include/${package_name}/build_version.hpp)
+configure_file(src/build_version.hpp.in ${version_header} @ONLY)
+
+file(GLOB_RECURSE headers LIST_DIRECTORIES false "include/*.hpp")
+
+target_sources(${PROJECT_NAME} PUBLIC FILE_SET HEADERS
+  BASE_DIRS
+  include
+  "${CMAKE_CURRENT_BINARY_DIR}/include"
+
+  FILES
+  ${headers}
+  "${CMAKE_CURRENT_BINARY_DIR}/${version_header}"
 )
 
-target_sources(${lib_name} PRIVATE
-  src/count_lines.cpp
-  src/file_filter.cpp
-  src/grammar.cpp
-  src/instance.cpp
-  src/json_io.cpp
-  src/line_counter.cpp
-  src/loc_type.hpp
-  src/lut.cpp
-  src/lut.hpp
-  src/row.cpp
-  src/scanner.cpp
-  src/scanner.hpp
-  src/util.hpp
-)
+file(GLOB_RECURSE sources LIST_DIRECTORIES false "src/*.[hc]pp")
 
-get_target_property(sources ${lib_name} SOURCES)
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
-configure_file(src/build_version.hpp.in "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}/build_version.hpp")
-source_group("include/${PROJECT_NAME}" FILES "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}/build_version.hpp")
-
-target_sources(${lib_name} PUBLIC FILE_SET HEADERS BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/include" FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME}/build_version.hpp"
+target_sources(${PROJECT_NAME} PRIVATE
+  ${sources}
 )

@@ -6,10 +6,9 @@ screenshots
 .cache
 .DS_Store
 
-ext/src
 **/test_src
 
 CMakeSettings.json
 compile_commands.json
 /CMakeUserPresets.json
-imgui.ini
+notes.txt

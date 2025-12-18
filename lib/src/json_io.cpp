@@ -1,64 +1,30 @@
-#include <locc/json_io.hpp>
+#include "locc/json_io.hpp"
 
-namespace {
-template <typename Type>
-void fill(std::vector<Type>& out, dj::Json const& arr) {
-	auto const av = arr.as_array();
-	out.reserve(av.size());
-	for (auto const& in : av) {
-		auto t = Type{};
-		from_json(in, t);
-		if constexpr (std::same_as<Type, std::string>) {
-			if (t.empty()) { continue; }
-		} else {
-			if (!t.is_valid()) { continue; }
-		}
-		out.push_back(std::move(t));
-	}
+void locc::from_json(dj::Json const& json, comment::Line& comment) { from_json(json["token"], comment.token); }
+
+void locc::from_json(dj::Json const& json, comment::Block& comment) {
+	from_json(json["open"], comment.open);
+	from_json(json["close"], comment.close);
 }
 
-template <typename Type>
-void fill(dj::Json& out, std::string_view const key, std::vector<Type> const& arr) {
-	if (arr.empty()) { return; }
-	auto& out_arr = out[key];
-	for (auto const& in : arr) { to_json(out_arr.push_back({}), in); }
-}
-} // namespace
-
-void locc::to_json(dj::Json& out, LineComment const& line_comment) { out = line_comment.prefix; }
-
-void locc::from_json(dj::Json const& json, LineComment& out) { out.prefix = json.as_string(); }
-
-void locc::to_json(dj::Json& out, BlockComment const& block_comment) {
-	to_json(out["open"], block_comment.open);
-	to_json(out["close"], block_comment.close);
+void locc::from_json(dj::Json const& json, Category& category) {
+	from_json(json["name"], category.name);
+	for (auto const& filename : json["exact_filenames"].as_array()) { from_json(filename, category.exact_filenames.emplace_back()); }
+	for (auto const& extension : json["file_extensions"].as_array()) { from_json(extension, category.file_extensions.emplace_back()); }
 }
 
-void locc::from_json(dj::Json const& json, BlockComment& out) {
-	from_json(json["open"], out.open);
-	from_json(json["close"], out.close);
+void locc::from_json(dj::Json const& json, Alphabet& alphabet) {
+	for (auto const& comment : json["line_comments"].as_array()) { from_json(comment, alphabet.line_comments.emplace_back()); }
+	for (auto const& comment : json["block_comments"].as_array()) { from_json(comment, alphabet.block_comments.emplace_back()); }
 }
 
-void locc::to_json(dj::Json& out, FileType const& file_type) {
-	to_json(out["type_name"], file_type.type_name);
-	if (!file_type.exact_filename.empty()) { to_json(out["exact_filename"], file_type.exact_filename); }
-	fill(out, "extensions", file_type.extensions);
+void locc::from_json(dj::Json const& json, CodeFamily& code_family) {
+	from_json(json["alphabet"], code_family.alphabet);
+	for (auto const& category : json["categories"].as_array()) { from_json(category, code_family.categories.emplace_back()); }
 }
 
-void locc::from_json(dj::Json const& json, FileType& out) {
-	from_json(json["type_name"], out.type_name);
-	from_json(json["exact_filename"], out.exact_filename);
-	fill(out.extensions, json["extensions"]);
-}
-
-void locc::to_json(dj::Json& out, Grammar const& grammar) {
-	fill(out, "file_types", grammar.file_types);
-	fill(out, "line_comments", grammar.line_comments);
-	fill(out, "block_comments", grammar.block_comments);
-}
-
-void locc::from_json(dj::Json const& json, Grammar& out) {
-	fill(out.file_types, json["file_types"]);
-	fill(out.line_comments, json["line_comments"]);
-	fill(out.block_comments, json["block_comments"]);
+void locc::from_json(dj::Json const& json, Specification& specification) {
+	for (auto const& family : json["code_families"].as_array()) { from_json(family, specification.code_families.emplace_back()); }
+	for (auto const& category : json["text_categories"].as_array()) { from_json(category, specification.text_categories.emplace_back()); }
+	for (auto const& suffix : json["exclude_suffixes"].as_array()) { from_json(suffix, specification.exclude_suffixes.emplace_back()); }
 }

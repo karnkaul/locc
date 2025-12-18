@@ -1,4 +1,4 @@
-# Lines of Code Counter
+# Lines of Code Counter v0.5
 
 [![Build status](https://github.com/karnkaul/locc/actions/workflows/ci.yml/badge.svg)](https://github.com/karnkaul/locc/actions/workflows/ci.yml)
 
@@ -9,112 +9,80 @@
 Syntax:
 
 ```
-locc [OPTIONS...] <path>
+locc [OPTIONS...] [PATH(=.)]
 ```
 
 ## Output
 
 Examples of output:
 
-Linux kernel (36 million lines counted)
+Linux kernel (38 million lines counted)
 
 ```
-$ time ./locc-cli linux/
-
-[====================] Completed (72352/72352)
-
+$ time ./locc linux
++-------------------------------------------------------------------------+
+| Category     |  Files |      Lines |       Code |  Comments |     Empty |
 ---------------------------------------------------------------------------
-| File Type    |  Files |      Lines |       Code |  Comments |     Empty |
----------------------------------------------------------------------------
-| C            | 34,679 | 24,641,580 | 18,335,424 | 2,752,545 | 3,553,611 |
-| C/C++ header | 26,396 | 10,216,011 |  7,944,696 | 1,508,356 |   762,959 |
-| JSON         |    867 |    537,555 |    537,553 |         0 |         2 |
-| YAML         |  4,436 |    497,589 |    395,624 |    20,318 |    81,647 |
-| Shell script |    923 |    181,514 |    126,030 |    22,945 |    32,539 |
-| Plain Text   |  1,503 |    136,506 |          0 |         0 |    24,586 |
-| Makefile     |  3,156 |     84,147 |     59,038 |    12,933 |    12,176 |
-| Python       |    264 |     79,032 |     62,136 |     4,910 |    11,986 |
-| XML          |     24 |     22,163 |     19,282 |     1,663 |     1,218 |
-| Rust         |     82 |     19,716 |      9,246 |     8,760 |     1,710 |
-| C++          |      4 |      2,305 |      1,870 |       100 |       335 |
-| CSV          |     11 |      1,373 |          0 |         0 |       106 |
-| Markdown     |      1 |        270 |        197 |         0 |        73 |
-| C++ header   |      2 |        125 |         59 |        47 |        19 |
-| HTML         |      2 |         33 |         22 |         8 |         3 |
-| INI          |      2 |         13 |          6 |         5 |         2 |
-| Total        | 72,352 | 36,419,932 | 27,491,183 | 4,332,590 | 4,482,972 |
----------------------------------------------------------------------------
+| C Source     | 36,236 | 25,790,524 | 19,712,859 | 2,324,330 | 3,753,335 |
+| C/C++ Header | 27,531 | 10,561,465 |  8,387,779 | 1,357,596 |   816,090 |
+| YAML         |  5,329 |    607,444 |    479,939 |    24,166 |   103,339 |
+| JSON         |    983 |    585,490 |          0 |         0 |       943 |
+| Shell        |  1,012 |    200,532 |    139,031 |    24,734 |    36,767 |
+| Rust         |    338 |    135,991 |     89,251 |    35,290 |    11,450 |
+| Plain Text   |  1,035 |    117,769 |          0 |         0 |    21,986 |
+| Python       |    346 |    101,745 |     78,547 |     6,630 |    16,568 |
+| Makefile     |  3,303 |     91,383 |     62,197 |    13,270 |    15,916 |
+| XML          |     31 |     24,249 |     21,628 |     1,122 |     1,499 |
+| C++ Source   |      4 |      2,251 |      1,836 |        80 |       335 |
+| Markdown     |      6 |        634 |        475 |         0 |       159 |
+| C++ Header   |      2 |        127 |         63 |        43 |        21 |
+| HTML         |      2 |         36 |         30 |         0 |         6 |
+| INI          |      2 |         15 |          6 |         5 |         4 |
+| Total        | 76,160 | 38,219,655 | 28,973,641 | 3,787,266 | 4,778,418 |
++-------------------------------------------------------------------------+
 
-
-real    0m0.550s
-user    0m4.313s
-sys     0m1.076s
+./locc linux  1.56s user 0.51s system 780% cpu 0.266 total
 ```
 
-This repo (v0.1)
+This repo (v0.5)
 
 ```
-$ out/ubsan/cli/Debug/locc-cli -vpe=ext --sort-column=Comments --sort-ascend
-params:
-  sort by       : Comments
-  exclude       : ext
-  grammars      : 
-  threads       : 16
-  sort ascend   : true
-  no progress   : true
-  verbose       : true
-  path          : .
-
-
------------------------------------------------------------
-| File Type    | Files | Lines |  Code | Comments | Empty |
------------------------------------------------------------
-| CMake script |     4 |   192 |   160 |        0 |    32 |
-| Markdown     |     1 |   126 |    93 |        0 |    33 |
-| JSON         |     3 |   634 |   631 |        3 |     0 |
-| C++ header   |    19 |   448 |   345 |        5 |    98 |
-| C++          |    17 | 1,279 | 1,083 |       16 |   180 |
-| Total        |    44 | 2,679 | 2,312 |       24 |   343 |
------------------------------------------------------------
-
+$ out/ubsan/cli/Debug/locc --log-level=info --heuristic=precision --threads=4 --sort-by=category
+[I] [locc::cli::App/00] log level set to: Info [14:56:01] [app.cpp:80]
+[I] [locc::cli::App/00] locc v0.5.1 [14:56:01] [app.cpp:81]
+[I] [locc::detail::(anonymous namespace)::Instance/00] threads: 4, Heuristic: Precision, flags: None [14:56:01] [instance.cpp:38]
+[I] [locc::detail::Executor/00] processing path: /home/karnage/cpp/lab/locc [14:56:01] [executor.cpp:22]
+[I] [locc::detail::Executor/00] counted 51 files in 1ms [14:56:01] [executor.cpp:101]
++-------------------------------------------------------+
+| Category   | Files | Lines |  Code | Comments | Empty |
+---------------------------------------------------------
+| C++ Header |    24 |   639 |   458 |       74 |   134 |
+| C++ Source |    16 |   935 |   783 |       24 |   152 |
+| CMake      |     4 |    97 |    69 |        1 |    27 |
+| JSON       |     5 |   444 |     0 |        0 |     1 |
+| Markdown   |     1 |   114 |    86 |        0 |    28 |
+| Plain Text |     1 |     4 |     0 |        0 |     1 |
+| Total      |    51 | 2,233 | 1,396 |       99 |   343 |
++-------------------------------------------------------+
 ```
 
 ## Building
 
-Use CMake and a preset / generator of your choice. All provided presets use Ninja Multi-Config and the default compiler except those named `*clang*`.
+Use CMake and a preset / generator of your choice.
 
 ### Requirements
 
 - Desktop OS (`int main()` entry point)
-- CMake 3.23+
+- CMake 3.24+
 - C++23 compiler (and stdlib)
 
 ## Contributing
 
 Pull requests are welcome.
 
-## Architecture
-
-* `locc-lib` is a library that can be used by CLI / GUI executables
-* `locc-cli` is the built-in CLI app that links to `locc-lib` and whose outputs are in this document; CMake option: `LOCC_BUILD_CLI`
-* `locc-gui` is a built-in GUI app that links to `locc-lib`; CMake option: `LOCC_BUILD_GUI`
-
-### Dependencies
-
-```
-   locc-gui   locc-cli
-      |        |
-  ----------   -
-  |        |   |
- gvdi     locc-lib
-             |
-          -------
-          |     |
-        klib  djson
-```
+## External Dependencies
 
 * [klib](https://github.com/karnkaul/klib)
-* [gvdi](https://github.com/karnkaul/gvdi)
 * [djson](https://github.com/karnkaul/djson)
 
 [**Original Repository**](https://github.com/karnkaul/locc)

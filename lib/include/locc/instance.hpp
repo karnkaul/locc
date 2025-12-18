@@ -1,27 +1,19 @@
 #pragma once
-#include <klib/task/queue_fwd.hpp>
-#include <locc/line_counter.hpp>
+#include "locc/init_info.hpp"
+#include "locc/result.hpp"
+#include <memory>
 
 namespace locc {
-struct InstanceCreateInfo {
-	std::vector<Grammar> grammars{get_default_grammars()};
-	IFileFilter const* file_filter{&DefaultFileFilter::get_instance()};
-};
-
-class Instance {
+/// \brief Central user API.
+class Instance : public klib::Polymorphic {
   public:
-	using CreateInfo = InstanceCreateInfo;
+	/// \returns Non-null concrete instance.
+	[[nodiscard]] static auto create(InitInfo init_info = {}) -> std::unique_ptr<Instance>;
 
-	explicit Instance(klib::task::Queue& queue, CreateInfo create_info = {});
+	/// \returns Number of worker threads.
+	[[nodiscard]] virtual auto get_thread_count() const -> ThreadCount = 0;
 
-	[[nodiscard]] auto start_count(std::string_view path) -> std::unique_ptr<LineCounter>;
-
-	[[nodiscard]] auto get_grammars() const -> std::span<Grammar const> { return m_grammars; }
-
-  private:
-	klib::task::Queue* m_queue;
-
-	std::vector<Grammar> m_grammars;
-	IFileFilter const* m_filter;
+	/// \returns Result summarizing file counts.
+	[[nodiscard]] virtual auto process(std::string_view path) -> Result = 0;
 };
 } // namespace locc
