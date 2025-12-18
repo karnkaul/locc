@@ -17,9 +17,9 @@ constexpr auto heuristic_name_v = klib::EnumArray<Heuristic, std::string_view>{"
 
 enum class Flag : std::uint8_t {
 	None = 0,
-	NoBuiltinCodeFamilies = 1 << 0,
-	NoBuiltinTextCategories = 1 << 1,
-	NoBuiltinExcludeSuffixes = 1 << 2,
+	NoDefaultCodeFamilies = 1 << 0,
+	NoDefaultTextCategories = 1 << 1,
+	NoDefaultExcludeSuffixes = 1 << 2,
 };
 [[nodiscard]] constexpr auto enable_enum_bitops(Flag /*unused*/) { return true; }
 

@@ -63,7 +63,7 @@ auto App::parse_args(int const argc, char const* const* const argv) -> klib::arg
 		klib::args::named_option(m_args.heuristic, "h,heuristic", "counting Heuristic (performance/precision)"),
 		klib::args::named_option(m_args.spec_json, "s,spec-json", "path to custom Specification JSON"),
 		klib::args::named_option(m_args.log_level, "l,log-level", "logging level (error/warn/info/debug)"),
-		klib::args::named_option(m_args.sort_by, "sort-by", "sort by (header in lowercase)"),
+		klib::args::named_option(m_args.sort_by, "sort-by", "sort by (header name)"),
 
 		klib::args::named_flag(m_args.no_code_families, "no-code-families", "no default Code Families"),
 		klib::args::named_flag(m_args.no_text_categories, "no-text-categories", "no default text Categories"),
@@ -128,9 +128,9 @@ void App::sort_result() {
 
 auto App::Args::get_flags() const -> Flag {
 	auto ret = Flag{};
-	if (no_code_families) { ret |= Flag::NoBuiltinCodeFamilies; }
-	if (no_text_categories) { ret |= Flag::NoBuiltinTextCategories; }
-	if (no_excude_suffixes) { ret |= Flag::NoBuiltinExcludeSuffixes; }
+	if (no_code_families) { ret |= Flag::NoDefaultCodeFamilies; }
+	if (no_text_categories) { ret |= Flag::NoDefaultTextCategories; }
+	if (no_excude_suffixes) { ret |= Flag::NoDefaultExcludeSuffixes; }
 	return ret;
 }
 } // namespace locc::cli

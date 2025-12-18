@@ -79,9 +79,9 @@ void append_to(T& out, U const& u) {
 }
 
 void append_to(Specification& out, Specification const& in, Flag const flags) {
-	if ((flags & Flag::NoBuiltinCodeFamilies) == Flag::None) { append_to(out.code_families, in.code_families); }
-	if ((flags & Flag::NoBuiltinTextCategories) == Flag::None) { append_to(out.text_categories, in.text_categories); }
-	if ((flags & Flag::NoBuiltinExcludeSuffixes) == Flag::None) { append_to(out.exclude_suffixes, in.exclude_suffixes); }
+	if ((flags & Flag::NoDefaultCodeFamilies) == Flag::None) { append_to(out.code_families, in.code_families); }
+	if ((flags & Flag::NoDefaultTextCategories) == Flag::None) { append_to(out.text_categories, in.text_categories); }
+	if ((flags & Flag::NoDefaultExcludeSuffixes) == Flag::None) { append_to(out.exclude_suffixes, in.exclude_suffixes); }
 }
 
 void append_from_json(Config& out, std::string_view const json_path) {
@@ -106,6 +106,11 @@ auto Config::build(InitInfo info) -> Config {
 
 	append_from_json(ret, info.custom_spec_json);
 	append_to(ret.spec, default_spec, info.flags);
+
+	if (ret.spec.code_families.empty() && ret.spec.text_categories.empty()) {
+		log.warn("no Code Families or text Categories, reverting to default Specification");
+		ret.spec = default_spec;
+	}
 
 	return ret;
 }

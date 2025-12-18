@@ -13,9 +13,9 @@ namespace {
 [[nodiscard, maybe_unused]] auto serialize_flags(Flag const flags) -> std::string {
 	auto ret = std::string{};
 	if (flags == Flag::None) { return "None"; }
-	if (test(flags, Flag::NoBuiltinCodeFamilies)) { ret += "NoBuiltinCodeFamilies|"; }
-	if (test(flags, Flag::NoBuiltinTextCategories)) { ret += "NoBuiltinTextCategories|"; }
-	if (test(flags, Flag::NoBuiltinExcludeSuffixes)) { ret += "NoBuiltinExcludeSuffixes|"; }
+	if (test(flags, Flag::NoDefaultCodeFamilies)) { ret += "NoDefaultCodeFamilies|"; }
+	if (test(flags, Flag::NoDefaultTextCategories)) { ret += "NoDefaultTextCategories|"; }
+	if (test(flags, Flag::NoDefaultExcludeSuffixes)) { ret += "NoDefaultExcludeSuffixes|"; }
 	ret.pop_back();
 	return ret;
 }

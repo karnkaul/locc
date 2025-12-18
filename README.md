@@ -19,7 +19,7 @@ Examples of output:
 Linux kernel (38 million lines counted)
 
 ```
-$ time ./locc linux
+$ time ./locc linux/
 +-------------------------------------------------------------------------+
 | Category     |  Files |      Lines |       Code |  Comments |     Empty |
 ---------------------------------------------------------------------------
@@ -47,24 +47,53 @@ $ time ./locc linux
 This repo (v0.5)
 
 ```
-$ out/ubsan/cli/Debug/locc --log-level=info --heuristic=precision --threads=4 --sort-by=category
-[I] [locc::cli::App/00] log level set to: Info [14:56:01] [app.cpp:80]
-[I] [locc::cli::App/00] locc v0.5.1 [14:56:01] [app.cpp:81]
-[I] [locc::detail::(anonymous namespace)::Instance/00] threads: 4, Heuristic: Precision, flags: None [14:56:01] [instance.cpp:38]
-[I] [locc::detail::Executor/00] processing path: /home/karnage/cpp/lab/locc [14:56:01] [executor.cpp:22]
-[I] [locc::detail::Executor/00] counted 51 files in 1ms [14:56:01] [executor.cpp:101]
+$ ./locc --log-level=info --heuristic=precision --threads=4 --sort-by=category
+[I] [locc::cli::App/00] log level set to: Info [20:57:48] [app.cpp:80]
+[I] [locc::cli::App/00] locc v0.5.1 [20:57:48] [app.cpp:81]
+[I] [locc::detail::(anonymous namespace)::Instance/00] threads: 4, Heuristic: Precision, flags: None [20:57:48] [instance.cpp:38]
+[I] [locc::detail::Executor/00] processing path: /home/karnage/cpp/locc [20:57:48] [executor.cpp:22]
+[I] [locc::detail::Executor/00] counted 52 files in 2ms [20:57:48] [executor.cpp:101]
 +-------------------------------------------------------+
 | Category   | Files | Lines |  Code | Comments | Empty |
 ---------------------------------------------------------
 | C++ Header |    24 |   639 |   458 |       74 |   134 |
-| C++ Source |    16 |   935 |   783 |       24 |   152 |
-| CMake      |     4 |    97 |    69 |        1 |    27 |
+| C++ Source |    16 |   940 |   787 |       24 |   153 |
+| CMake      |     4 |    90 |    65 |        0 |    25 |
 | JSON       |     5 |   444 |     0 |        0 |     1 |
-| Markdown   |     1 |   114 |    86 |        0 |    28 |
-| Plain Text |     1 |     4 |     0 |        0 |     1 |
-| Total      |    51 | 2,233 | 1,396 |       99 |   343 |
+| Markdown   |     1 |   118 |    90 |        0 |    28 |
+| Shell      |     2 |    36 |    22 |        2 |    12 |
+| Total      |    52 | 2,267 | 1,422 |      100 |   353 |
 +-------------------------------------------------------+
 ```
+
+### Options
+
+`locc` supports a few options, as of v0.5.1:
+
+```
+$ ./locc --help
+lines of code counter
+Usage:
+  locc [OPTION...] [path(=)] 
+  locc <--help|--usage|--version>
+
+OPTIONS
+  -t, --threads                desired number of threads
+  -h, --heuristic              counting Heuristic (performance/precision)
+  -s, --spec-json              path to custom Specification JSON
+  -l, --log-level              logging level (error/warn/info/debug)
+      --sort-by                sort by (header name)
+      --no-code-families       no default Code Families
+      --no-text-categories     no default text Categories
+      --no-exclude-suffixes    no default exclude suffixes
+      --help                   display this help and exit
+      --usage                  print usage and exit
+      --version                print version text and exit
+```
+
+### Custom Specification
+
+The schema for a custom specification JSON is provided [here](./schema.json).
 
 ## Building
 
@@ -72,7 +101,7 @@ Use CMake and a preset / generator of your choice.
 
 ### Requirements
 
-- Desktop OS (`int main()` entry point)
+- Desktop OS (`int main()` entrypoint)
 - CMake 3.24+
 - C++23 compiler (and stdlib)
 
