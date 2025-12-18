@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.24)
 
-project(locc VERSION "0.4.2")
+set(package_name locc)
+set(package_version 0.5.1)
+project(${package_name} VERSION ${package_version})
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,21 +10,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_DEBUG_POSTFIX "-d")
 
 option(LOCC_BUILD_CLI "Build locc CLI app" ${PROJECT_IS_TOP_LEVEL})
-option(LOCC_BUILD_GUI "Build locc GUI app" ${PROJECT_IS_TOP_LEVEL})
-option(LOCC_BUILD_TESTS "Build locc tests" ${PROJECT_IS_TOP_LEVEL})
 
 add_subdirectory(ext)
 add_subdirectory(lib)
 
 if(LOCC_BUILD_CLI)
   add_subdirectory(cli)
-endif()
-
-if(LOCC_BUILD_GUI)
-  add_subdirectory(gui)
-endif()
-
-if(LOCC_BUILD_TESTS)
-  enable_testing()
-  add_subdirectory(tests)
 endif()

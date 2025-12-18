@@ -1,5 +1,10 @@
-#include <string_view>
+#pragma once
+#include "klib/version.hpp"
 
 namespace locc {
-constexpr std::string_view version_v{"@PROJECT_VERSION@"};
+constexpr auto build_version_v = klib::Version{
+	.major = @PROJECT_VERSION_MAJOR@,
+	.minor = @PROJECT_VERSION_MINOR@,
+	.patch = @PROJECT_VERSION_PATCH@,
+};
 } // namespace locc
