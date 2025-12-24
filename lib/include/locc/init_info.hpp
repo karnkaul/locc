@@ -23,11 +23,14 @@ enum class Flag : std::uint8_t {
 };
 [[nodiscard]] constexpr auto enable_enum_bitops(Flag /*unused*/) { return true; }
 
+constexpr auto default_recurse_max_depth_v = 100;
+
 struct InitInfo {
 	ThreadCount thread_count{get_max_threads()};
 	Heuristic heuristic{Heuristic::Performance};
 	Specification custom_spec{};
 	std::string_view custom_spec_json{};
+	int max_recurse_depth{default_recurse_max_depth_v};
 	Flag flags{Flag::None};
 };
 } // namespace locc

@@ -19,7 +19,7 @@ class Executor {
 
 	void process_file(fs::path path);
 	void enqueue_job(fs::path path, Workspace::Entry& entry);
-	void walk_directory(fs::path const& path);
+	void walk_directory(fs::path const& path, int depth);
 	void prepare_result();
 
 	[[nodiscard]] auto create_counter(fs::path path, Workspace::Entry const& entry) const -> std::unique_ptr<Counter>;

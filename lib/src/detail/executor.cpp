@@ -22,7 +22,7 @@ auto Executor::execute(std::string_view const path) -> Result {
 	log.info("processing path: {}", m_result.query_path);
 
 	if (fs::is_directory(m_workspace.path)) {
-		walk_directory(m_workspace.path);
+		walk_directory(m_workspace.path, 0);
 	} else if (fs::is_regular_file(m_workspace.path)) {
 		process_file(m_workspace.path);
 	} else {
@@ -57,15 +57,22 @@ void Executor::enqueue_job(fs::path path, Workspace::Entry& entry) {
 	}
 }
 
-void Executor::walk_directory(fs::path const& path) {
+void Executor::walk_directory(fs::path const& path, int const depth) {
+	if (depth > m_workspace.config.max_depth) {
+		if constexpr (klib::log::debug_enabled_v) { log.debug("skipping directory: {} (depth: {})", path.generic_string(), depth); }
+		return;
+	}
+
 	auto const exclude_match = m_workspace.find_exclude_match(path);
 	if (!exclude_match.empty()) {
 		if constexpr (klib::log::debug_enabled_v) { log.debug("skipping directory: {} (exclude match: {})", path.generic_string(), exclude_match); }
 		return;
 	}
+
+	if constexpr (klib::log::debug_enabled_v) { log.debug("walking directory: {} (depth: {})", path.generic_string(), depth); }
 	for (auto const& it : fs::directory_iterator{path}) {
 		if (it.is_directory()) {
-			walk_directory(it.path());
+			walk_directory(it.path(), depth + 1);
 			continue;
 		}
 		if (it.is_symlink()) {

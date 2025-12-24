@@ -102,7 +102,7 @@ void append_from_json(Config& out, std::string_view const json_path) {
 } // namespace
 
 auto Config::build(InitInfo info) -> Config {
-	auto ret = Config{.spec = std::move(info.custom_spec), .heuristic = info.heuristic};
+	auto ret = Config{.spec = std::move(info.custom_spec), .heuristic = info.heuristic, .max_depth = info.max_recurse_depth};
 
 	append_from_json(ret, info.custom_spec_json);
 	append_to(ret.spec, default_spec, info.flags);
@@ -110,6 +110,11 @@ auto Config::build(InitInfo info) -> Config {
 	if (ret.spec.code_families.empty() && ret.spec.text_categories.empty()) {
 		log.warn("no Code Families or text Categories, reverting to default Specification");
 		ret.spec = default_spec;
+	}
+
+	if (ret.max_depth < 0) {
+		log.warn("invalid max-depth: {}, reverting to default ({})", ret.max_depth, default_recurse_max_depth_v);
+		ret.max_depth = default_recurse_max_depth_v;
 	}
 
 	return ret;

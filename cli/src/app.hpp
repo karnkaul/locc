@@ -18,6 +18,7 @@ class App {
 		std::string_view heuristic{};
 		std::string_view spec_json{};
 		std::string_view log_level{};
+		int max_recurse_depth{default_recurse_max_depth_v};
 		bool no_code_families{};
 		bool no_text_categories{};
 		bool no_excude_suffixes{};

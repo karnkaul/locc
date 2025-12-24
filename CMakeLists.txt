@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 set(package_name locc)
-set(package_version 0.5.1)
+set(package_version 0.5.2)
 project(${package_name} VERSION ${package_version})
 
 set(CMAKE_CXX_STANDARD 23)

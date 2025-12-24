@@ -17,5 +17,6 @@ struct Config {
 	dj::Json custom_spec_json{};
 	Specification spec{};
 	Heuristic heuristic{};
+	int max_depth{};
 };
 } // namespace locc::detail
