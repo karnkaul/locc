@@ -64,6 +64,7 @@ auto App::parse_args(int const argc, char const* const* const argv) -> klib::arg
 		klib::args::named_option(m_args.spec_json, "s,spec-json", "path to custom Specification JSON"),
 		klib::args::named_option(m_args.log_level, "l,log-level", "logging level (error/warn/info/debug)"),
 		klib::args::named_option(m_args.sort_by, "sort-by", "sort by (header name)"),
+		klib::args::named_option(m_args.max_recurse_depth, "d,max-recurse-depth", "max depth for recursive directory iteration"),
 
 		klib::args::named_flag(m_args.no_code_families, "no-code-families", "no default Code Families"),
 		klib::args::named_flag(m_args.no_text_categories, "no-text-categories", "no default text Categories"),
@@ -86,6 +87,7 @@ void App::create_instance() {
 		.thread_count = ThreadCount(m_args.thread_count),
 		.heuristic = to_heuristic(m_args.heuristic),
 		.custom_spec_json = m_args.spec_json,
+		.max_recurse_depth = m_args.max_recurse_depth,
 		.flags = m_args.get_flags(),
 	};
 	m_instance = Instance::create(std::move(init_info));

@@ -8,7 +8,7 @@
 namespace locc {
 namespace detail {
 namespace {
-[[nodiscard]] constexpr auto test(Flag const flags, Flag const mask) -> bool { return (flags & mask) == mask; }
+[[nodiscard, maybe_unused]] constexpr auto test(Flag const flags, Flag const mask) -> bool { return (flags & mask) == mask; }
 
 [[nodiscard, maybe_unused]] auto serialize_flags(Flag const flags) -> std::string {
 	auto ret = std::string{};
@@ -35,7 +35,8 @@ class Instance : public locc::Instance {
 		m_config = Config::build(std::move(info));
 
 		if constexpr (klib::log::debug_enabled_v) {
-			m_log.info("threads: {}, Heuristic: {}, flags: {}", int(get_thread_count()), heuristic_name_v[m_config.heuristic], serialize_flags(flags));
+			m_log.info("threads: {}, Heuristic: {}, max_depth: {}, flags: {}", int(get_thread_count()), heuristic_name_v[m_config.heuristic],
+					   m_config.max_depth, serialize_flags(flags));
 		}
 	}
 

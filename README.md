@@ -68,7 +68,7 @@ $ ./locc --log-level=info --heuristic=precision --threads=4 --sort-by=category
 
 ### Options
 
-`locc` supports a few options, as of v0.5.1:
+`locc` supports a few options, as of v0.5.2:
 
 ```
 $ ./locc --help
@@ -83,6 +83,7 @@ OPTIONS
   -s, --spec-json              path to custom Specification JSON
   -l, --log-level              logging level (error/warn/info/debug)
       --sort-by                sort by (header name)
+  -d, --max-recurse-depth      max depth for recursive directory iteration
       --no-code-families       no default Code Families
       --no-text-categories     no default text Categories
       --no-exclude-suffixes    no default exclude suffixes
