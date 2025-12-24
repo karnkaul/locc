@@ -108,13 +108,13 @@ auto Config::build(InitInfo info) -> Config {
 	append_to(ret.spec, default_spec, info.flags);
 
 	if (ret.spec.code_families.empty() && ret.spec.text_categories.empty()) {
-		log.warn("no Code Families or text Categories, reverting to default Specification");
 		ret.spec = default_spec;
+		log.warn("no Code Families or text Categories, reverting to default Specification");
 	}
 
 	if (ret.max_depth < 0) {
-		log.warn("invalid max-depth: {}, reverting to default ({})", ret.max_depth, default_recurse_max_depth_v);
 		ret.max_depth = default_recurse_max_depth_v;
+		log.warn("invalid max-depth: {}, reverting to default: {}", info.max_recurse_depth, default_recurse_max_depth_v);
 	}
 
 	return ret;
